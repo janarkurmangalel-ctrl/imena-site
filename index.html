@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ИМЕНА — HR, консалтинг и рекрутинг</title>
+  <meta name="description" content="ИМЕНА — современное HR-агентство. Рекрутинг, кадровый аутсорсинг, EVP, аутплейсмент, оценка и цифровая трансформация HR.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23000'/%3E%3Cpath d='M14 15h9v34h-9zm14 0h8l14 21V15h9v34h-8L37 28v21h-9z' fill='%23D8FF00'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="ИМЕНА — на главную">
+      <span>ИМЕНА</span><i></i>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="#services">Услуги</a>
+      <a href="#recruiting">Рекрутинг</a>
+      <a href="#approach">Подход</a>
+    </nav>
+    <div class="header-actions">
+      <button class="button button-ghost button-small js-open-resume" type="button">Загрузить резюме</button>
+      <button class="button button-small js-open-form" type="button">Оставить заявку</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero section-dark">
+      <div class="glow glow-one"></div>
+      <div class="hero-copy reveal">
+        <p class="eyebrow">HR · CONSULTING · MEDIA</p>
+        <h1>HR как <span>стратегия</span>, система и влияние на бизнес</h1>
+        <p class="hero-lead">Открывая новые имена в Казахстане и странах Центральной Азии.</p>
+        <div class="hero-actions">
+          <button class="button js-open-form" type="button">Обсудить задачу</button>
+          <a class="text-link" href="#services">Посмотреть услуги <span>↘</span></a>
+        </div>
+      </div>
+      <div class="hero-portrait reveal">
+        <div class="portrait-frame">
+          <img src="./assets/founder.jpg" alt="Основатель HR-агентства ИМЕНА" width="960" height="1280">
+        </div>
+        <div class="portrait-caption">
+          <span>Жанара Курмангаликызы</span>
+          <strong>Основатель «ИМЕНА»</strong>
+        </div>
+        <p class="founder-role">HRD и HRBP с 12-летним опытом в IT, аграрной отрасли и образовании.</p>
+      </div>
+      <div class="hero-index" aria-hidden="true">01</div>
+    </section>
+
+    <section class="manifesto section-light">
+      <p class="section-number">01 / Философия</p>
+      <div class="manifesto-grid">
+        <h2>Люди — главный актив бизнеса.</h2>
+        <div>
+          <p>«ИМЕНА» объединяет подбор персонала, HR-консалтинг, кадровую архитектуру и бизнес-мышление.</p>
+          <p>Мы выстраиваем HR как систему, которая поддерживает рост компании.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="services section-dark" id="services">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">02 / Услуги</p>
+          <h2>Решения для бизнеса</h2>
+        </div>
+        <p>От точечного найма до трансформации HR-функции.</p>
+      </div>
+
+      <div class="service-list">
+        <article class="service-row featured">
+          <span class="service-no">01</span>
+          <div><h3>Рекрутинг</h3><p>Находим специалистов и руководителей по компетенциям, ценностям и реальным задачам бизнеса.</p></div>
+          <span class="price">Индивидуально</span>
+          <a href="#recruiting" aria-label="Подробнее о рекрутинге">↘</a>
+        </article>
+        <article class="service-row">
+          <span class="service-no">02</span>
+          <div><h3>Кадровый аутсорсинг</h3><p>Порядок в документах, соблюдение сроков и снижение кадровых рисков.</p></div>
+          <span class="price">от 150 000 ₸ / мес.</span>
+          <button class="arrow-button js-open-form" data-service="Кадровый аутсорсинг" aria-label="Оставить заявку на кадровый аутсорсинг">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">03</span>
+          <div><h3>Аутплейсмент</h3><p>Карьерное сопровождение сотрудников при увольнении и защита репутации работодателя.</p></div>
+          <span class="price">от 350 000 ₸</span>
+          <button class="arrow-button js-open-form" data-service="Аутплейсмент" aria-label="Оставить заявку на аутплейсмент">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">04</span>
+          <div><h3>Разработка EVP</h3><p>Ценностное предложение работодателя для привлечения и удержания сильных сотрудников.</p></div>
+          <span class="price">от 800 000 ₸</span>
+          <button class="arrow-button js-open-form" data-service="Разработка EVP" aria-label="Оставить заявку на разработку EVP">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">05</span>
+          <div><h3>Предпроектное обследование</h3><p>Аудит процессов перед цифровой трансформацией: потери, приоритеты и план автоматизации.</p></div>
+          <span class="price">Индивидуально</span>
+          <button class="arrow-button js-open-form" data-service="Предпроектное обследование" aria-label="Оставить заявку на предпроектное обследование">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">06</span>
+          <div><h3>Обучение рекрутингу</h3><p>Двухдневная практическая программа по поиску, оценке и найму кандидатов.</p></div>
+          <span class="price">550 000 ₸</span>
+          <button class="arrow-button js-open-form" data-service="Обучение рекрутингу" aria-label="Оставить заявку на обучение рекрутингу">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">07</span>
+          <div><h3>Интервью по компетенциям</h3><p>Независимая оценка кандидата или сотрудника с профессиональным заключением.</p></div>
+          <span class="price">55 000 ₸ / интервью</span>
+          <button class="arrow-button js-open-form" data-service="Интервью по компетенциям" aria-label="Оставить заявку на интервью по компетенциям">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">08</span>
+          <div><h3>Профориентация</h3><p>Помогаем определить сильные стороны, профессиональные интересы и подходящее направление развития.</p></div>
+          <span class="price">30 000 ₸ / консультация</span>
+          <button class="arrow-button js-open-form" data-service="Профориентация" aria-label="Оставить заявку на профориентацию">↗</button>
+        </article>
+        <article class="service-row">
+          <span class="service-no">09</span>
+          <div><h3>Карьерная консультация</h3><p>Разбираем карьерную ситуацию, цели и следующие шаги. Формируем персональную стратегию развития.</p></div>
+          <span class="price">30 000 ₸ / консультация</span>
+          <button class="arrow-button js-open-form" data-service="Карьерная консультация" aria-label="Оставить заявку на карьерную консультацию">↗</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="recruiting section-light" id="recruiting">
+      <p class="section-number">03 / Рекрутинг</p>
+      <div class="recruiting-title">
+        <h2>Находим людей, которые <span>меняют бизнес</span></h2>
+        <p>Сильная команда начинается с точного понимания задач бизнеса.</p>
+      </div>
+
+      <div class="position-band">
+        <span>Какие позиции мы закрываем</span>
+        <p>Руководители, квалифицированные специалисты, производственный и линейный персонал — от массовых до редких и сложных вакансий.</p>
+      </div>
+
+      <div class="process" aria-label="Процесс рекрутинга">
+        <div><span>01</span><strong>Бриф</strong></div>
+        <div><span>02</span><strong>Профиль кандидата</strong></div>
+        <div><span>03</span><strong>Поиск</strong></div>
+        <div><span>04</span><strong>Оценка</strong></div>
+        <div><span>05</span><strong>Шорт-лист</strong></div>
+        <div><span>06</span><strong>Выход и адаптация</strong></div>
+      </div>
+    </section>
+
+    <section class="approach section-dark" id="approach">
+      <div class="section-heading">
+        <div>
+          <p class="section-number">04 / Подход</p>
+          <h2>Спокойная сила</h2>
+        </div>
+        <p>Система, вкус и влияние без лишнего шума.</p>
+      </div>
+      <div class="principles">
+        <article><span>01</span><h3>Качество</h3><p>Представляем кандидатов, которые соответствуют согласованным критериям.</p></article>
+        <article><span>02</span><h3>Оценка по фактам</h3><p>Изучаем результаты, решения, мотивацию и профессиональное поведение.</p></article>
+        <article><span>03</span><h3>Прозрачность</h3><p>Открыто говорим о рынке, рисках и ожиданиях обеих сторон.</p></article>
+        <article><span>04</span><h3>Конфиденциальность</h3><p>Бережно работаем с информацией заказчика и данными кандидатов.</p></article>
+      </div>
+    </section>
+
+    <section class="candidate-section section-light" id="candidates">
+      <p class="section-number">05 / Кандидатам</p>
+      <div class="candidate-grid">
+        <div>
+          <h2>Ваше имя может стать следующим</h2>
+          <p>Загрузите резюме в базу «ИМЕНА». Мы свяжемся с вами, когда появится позиция, соответствующая вашему опыту и карьерным целям.</p>
+        </div>
+        <button class="button button-dark js-open-resume" type="button">Загрузить резюме</button>
+      </div>
+    </section>
+
+    <section class="cta section-lime">
+      <p class="section-number">06 / Контакт</p>
+      <h2>Кого вы ищете?</h2>
+      <p>Расскажите о задаче. Мы оценим рынок и предложим подходящий формат работы.</p>
+      <div class="cta-actions">
+        <button class="button button-dark js-open-form" type="button">Оставить заявку</button>
+        <a class="contact-phone" href="tel:+77754113033">ИМЕНА · +7 775 411 30 33</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="#top"><span>ИМЕНА</span><i></i></a>
+    <p>HR как стратегия, система и влияние на бизнес.</p>
+    <div>
+      <a href="tel:+77754113033">ИМЕНА · +7 775 411 30 33</a>
+      <a href="https://instagram.com/imena.kz" target="_blank" rel="noreferrer">Instagram</a>
+      <span>Казахстан · Центральная Азия</span>
+    </div>
+  </footer>
+
+  <dialog id="lead-dialog" aria-labelledby="lead-title">
+    <button class="dialog-close" type="button" aria-label="Закрыть форму">×</button>
+    <p class="eyebrow">НОВЫЙ ЛИД</p>
+    <h2 id="lead-title">Оставить заявку</h2>
+    <p class="dialog-intro">Заполните форму, и мы свяжемся с вами для обсуждения задачи.</p>
+    <div id="bitrix-form-slot">
+      <form id="lead-form">
+        <input type="hidden" name="service" id="service-field" value="Консультация">
+        <div class="form-grid">
+          <label>Имя<input name="name" autocomplete="given-name" required></label>
+          <label>Фамилия<input name="surname" autocomplete="family-name" required></label>
+          <label>Должность<input name="position" autocomplete="organization-title"></label>
+          <label>Компания<input name="company" autocomplete="organization"></label>
+        </div>
+        <label>Номер телефона<input name="phone" type="tel" autocomplete="tel" placeholder="+7 700 000 00 00" required></label>
+        <label class="consent"><input name="consent" type="checkbox" required><span>Согласен(на) на обработку персональных данных</span></label>
+        <button class="button" type="submit">Отправить заявку</button>
+        <p class="form-note" id="form-note">Форма будет подключена к Bitrix24 перед публикацией.</p>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="resume-dialog" aria-labelledby="resume-title">
+    <button class="dialog-close resume-close" type="button" aria-label="Закрыть форму">×</button>
+    <p class="eyebrow">БАЗА КАНДИДАТОВ</p>
+    <h2 id="resume-title">Загрузить резюме</h2>
+    <p class="dialog-intro">Расскажите о себе и прикрепите резюме. Данные будут переданы в базу кандидатов «ИМЕНА» в Bitrix24.</p>
+    <div id="bitrix-resume-form-slot">
+      <form id="resume-form">
+        <div class="form-grid">
+          <label>Имя<input name="name" autocomplete="given-name" required></label>
+          <label>Фамилия<input name="surname" autocomplete="family-name" required></label>
+          <label>Телефон<input name="phone" type="tel" autocomplete="tel" placeholder="+7 700 000 00 00" required></label>
+          <label>Город<input name="city" autocomplete="address-level2"></label>
+        </div>
+        <label>Желаемая позиция<input name="target-position" autocomplete="off"></label>
+        <label class="file-field">Резюме
+          <input name="resume" type="file" accept=".pdf,.doc,.docx" required>
+          <span>PDF, DOC или DOCX</span>
+        </label>
+        <label class="consent"><input name="consent" type="checkbox" required><span>Согласен(на) на обработку персональных данных и включение резюме в базу кандидатов</span></label>
+        <button class="button" type="submit">Загрузить резюме</button>
+        <p class="form-note" id="resume-note">Форма будет подключена к Bitrix24 перед публичным запуском.</p>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="./script.js"></script>
+</body>
+</html>
