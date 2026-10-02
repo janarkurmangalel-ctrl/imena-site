@@ -73,16 +73,12 @@ h1 span, .recruiting-title h2 span { color: var(--lime); }
 .recruiting-title { display: grid; grid-template-columns: 1.3fr .7fr; gap: 8vw; align-items: end; margin: 56px 0 100px; }
 .recruiting-title h2 span { display: block; color: #606060; }
 .recruiting-title p { color: #686868; font-size: 21px; line-height: 1.45; }
-.position-band { display: grid; grid-template-columns: .55fr 1.45fr; gap: 8vw; padding: 32px 0; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
-.position-band:hover { color: var(--white); background: var(--black); border-color: var(--lime); }
-.position-band:hover span { color: var(--lime); }
-.position-band span { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
-.position-list { max-width: 960px; margin: 0; padding: 0; list-style: none; font-size: clamp(18px, 1.7vw, 26px); line-height: 1.25; }
-.position-list li { padding: 11px 0; border-bottom: 1px solid var(--line-light); }
-.position-list li:first-child { padding-top: 0; }
-.position-list li:last-child { padding-bottom: 0; border-bottom: 0; font-weight: 800; }
-.position-band:hover .position-list li { border-color: var(--line-dark); }
-.position-band:hover .position-list li:last-child { color: var(--lime); }
+.position-band { display: grid; grid-template-columns: .55fr 1.45fr; gap: 8vw; padding: 32px 0; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); }
+.position-band > span { padding-top: 17px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
+.position-list { max-width: 960px; margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: clamp(18px, 1.7vw, 26px); line-height: 1.2; }
+.position-list li { padding: 16px 22px; color: var(--ink); background: transparent; border: 1px solid var(--line-light); border-radius: 999px; transition: color .22s ease, background-color .22s ease, border-color .22s ease, transform .22s ease; }
+.position-list li:hover { color: var(--black); background: var(--lime); border-color: var(--lime); transform: translateX(8px); }
+.position-list li:last-child { font-weight: 800; }
 .process { display: grid; grid-template-columns: repeat(6,1fr); margin-top: 68px; }
 .process div { position: relative; min-height: 150px; padding: 24px 20px 24px 0; border-top: 2px solid var(--black); }
 .process div::before { content: ""; position: absolute; top: -6px; left: 0; width: 10px; height: 10px; background: var(--lime); border: 2px solid var(--black); border-radius: 50%; }
