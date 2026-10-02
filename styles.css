@@ -73,7 +73,9 @@ h1 span, .recruiting-title h2 span { color: var(--lime); }
 .recruiting-title { display: grid; grid-template-columns: 1.3fr .7fr; gap: 8vw; align-items: end; margin: 56px 0 100px; }
 .recruiting-title h2 span { display: block; color: #606060; }
 .recruiting-title p { color: #686868; font-size: 21px; line-height: 1.45; }
-.position-band { display: grid; grid-template-columns: .55fr 1.45fr; gap: 8vw; padding: 32px 0; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); }
+.position-band { display: grid; grid-template-columns: .55fr 1.45fr; gap: 8vw; padding: 32px 0; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
+.position-band:hover { color: var(--white); background: var(--black); border-color: var(--lime); }
+.position-band:hover span { color: var(--lime); }
 .position-band span { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
 .position-band p { max-width: 960px; margin: 0; font-size: clamp(19px, 2.25vw, 31px); line-height: 1.35; }
 .process { display: grid; grid-template-columns: repeat(6,1fr); margin-top: 68px; }
