@@ -77,7 +77,12 @@ h1 span, .recruiting-title h2 span { color: var(--lime); }
 .position-band:hover { color: var(--white); background: var(--black); border-color: var(--lime); }
 .position-band:hover span { color: var(--lime); }
 .position-band span { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
-.position-band p { max-width: 960px; margin: 0; font-size: clamp(19px, 2.25vw, 31px); line-height: 1.35; }
+.position-list { max-width: 960px; margin: 0; padding: 0; list-style: none; font-size: clamp(18px, 1.7vw, 26px); line-height: 1.25; }
+.position-list li { padding: 11px 0; border-bottom: 1px solid var(--line-light); }
+.position-list li:first-child { padding-top: 0; }
+.position-list li:last-child { padding-bottom: 0; border-bottom: 0; font-weight: 800; }
+.position-band:hover .position-list li { border-color: var(--line-dark); }
+.position-band:hover .position-list li:last-child { color: var(--lime); }
 .process { display: grid; grid-template-columns: repeat(6,1fr); margin-top: 68px; }
 .process div { position: relative; min-height: 150px; padding: 24px 20px 24px 0; border-top: 2px solid var(--black); }
 .process div::before { content: ""; position: absolute; top: -6px; left: 0; width: 10px; height: 10px; background: var(--lime); border: 2px solid var(--black); border-radius: 50%; }
