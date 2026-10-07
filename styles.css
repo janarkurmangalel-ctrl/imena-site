@@ -191,3 +191,18 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
 .logo-gke { font-size: 21px; letter-spacing: .02em; }
 .logo-profil { font-size: 21px; letter-spacing: .09em; }
 @keyframes logo-scroll { to { transform: translateX(-50%); } }
+
+@media (max-width: 900px) {
+  .trusted-heading { grid-template-columns: 1fr; gap: 28px; }
+  .trusted-heading > p { max-width: 620px; }
+  .client-logo { min-width: 180px; height: 96px; padding: 0 26px; font-size: 20px; }
+}
+@media (max-width: 580px) {
+  .trusted-heading { margin-bottom: 48px; }
+  .client-logo { min-width: 155px; height: 82px; padding: 0 20px; font-size: 17px; }
+  .logo-track { animation-duration: 34s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-track { animation: none; }
+  .logo-marquee { overflow-x: auto; }
+}
