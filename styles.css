@@ -165,10 +165,10 @@ input:focus { border-color: var(--lime); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { animation: none; } }
 
 .trusted { padding-left: 0; padding-right: 0; color: var(--black); background: var(--lime); }
-.trusted-heading { display: grid; grid-template-columns: 1fr minmax(260px, 430px); gap: 60px; align-items: end; padding: 0 var(--pad); margin-bottom: 72px; }
+.trusted-heading { width: 50%; margin: 0 auto 56px; padding: 0 clamp(18px, 3vw, 42px); text-align: center; }
 .trusted-heading h2 { max-width: 900px; margin-bottom: 0; font-size: clamp(44px, 6.6vw, 104px); line-height: .96; letter-spacing: -.07em; }
 .trusted-heading > p { margin: 0 0 9px; color: rgba(0,0,0,.66); font-size: 18px; line-height: 1.5; }
-.logo-marquee { position: relative; width: 100%; overflow: hidden; padding: 18px 0; background: var(--black); border-top: 1px solid rgba(0,0,0,.22); border-bottom: 1px solid rgba(0,0,0,.22); box-shadow: 0 28px 70px rgba(0,0,0,.18); }
+.logo-marquee { position: relative; width: 50%; margin: 0 auto; overflow: hidden; padding: 18px 0; background: var(--black); border-top: 1px solid rgba(0,0,0,.22); border-bottom: 1px solid rgba(0,0,0,.22); box-shadow: 0 28px 70px rgba(0,0,0,.18); }
 .logo-marquee::before, .logo-marquee::after { content: ""; position: absolute; z-index: 2; top: 0; bottom: 0; width: min(12vw, 150px); pointer-events: none; }
 .logo-marquee::before { left: 0; background: linear-gradient(90deg, var(--black), transparent); }
 .logo-marquee::after { right: 0; background: linear-gradient(-90deg, var(--black), transparent); }
@@ -193,12 +193,13 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
 @keyframes logo-scroll { to { transform: translateX(-50%); } }
 
 @media (max-width: 900px) {
-  .trusted-heading { grid-template-columns: 1fr; gap: 28px; }
+  .trusted-heading { width: 72%; }
   .trusted-heading > p { max-width: 620px; }
   .client-logo { min-width: 180px; height: 96px; padding: 0 26px; font-size: 20px; }
 }
 @media (max-width: 580px) {
-  .trusted-heading { margin-bottom: 48px; }
+  .trusted-heading { width: 100%; margin-bottom: 40px; }
+  .logo-marquee { width: 100%; }
   .client-logo { min-width: 155px; height: 82px; padding: 0 20px; font-size: 17px; }
   .logo-track { animation-duration: 34s; }
 }
