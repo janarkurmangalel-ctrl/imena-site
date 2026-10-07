@@ -168,7 +168,7 @@ input:focus { border-color: var(--lime); }
 .trusted-heading { width: 50%; margin: 0 auto 56px; padding: 0 clamp(18px, 3vw, 42px); text-align: center; }
 .trusted-heading h2 { max-width: 900px; margin-bottom: 0; font-size: clamp(44px, 6.6vw, 104px); line-height: .96; letter-spacing: -.07em; }
 .trusted-heading > p { margin: 0 0 9px; color: rgba(0,0,0,.66); font-size: 18px; line-height: 1.5; }
-.logo-marquee { position: relative; width: 50%; margin: 0 auto; overflow: hidden; padding: 18px 0; background: var(--black); border-top: 1px solid rgba(0,0,0,.22); border-bottom: 1px solid rgba(0,0,0,.22); box-shadow: 0 28px 70px rgba(0,0,0,.18); }
+.logo-marquee { position: relative; width: 100%; margin: 0; overflow: hidden; padding: 18px 0; background: var(--black); border-top: 1px solid rgba(0,0,0,.22); border-bottom: 1px solid rgba(0,0,0,.22); box-shadow: 0 28px 70px rgba(0,0,0,.18); }
 .logo-marquee::before, .logo-marquee::after { content: ""; position: absolute; z-index: 2; top: 0; bottom: 0; width: min(12vw, 150px); pointer-events: none; }
 .logo-marquee::before { left: 0; background: linear-gradient(90deg, var(--black), transparent); }
 .logo-marquee::after { right: 0; background: linear-gradient(-90deg, var(--black), transparent); }
