@@ -163,3 +163,31 @@ input:focus { border-color: var(--lime); }
   .whatsapp-float > span:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { animation: none; } }
+
+.trusted { padding-left: 0; padding-right: 0; }
+.trusted-heading { display: grid; grid-template-columns: 1fr minmax(260px, 430px); gap: 60px; align-items: end; padding: 0 var(--pad); margin-bottom: 72px; }
+.trusted-heading h2 { max-width: 900px; margin-bottom: 0; font-size: clamp(44px, 6.6vw, 104px); line-height: .96; letter-spacing: -.07em; }
+.trusted-heading > p { margin: 0 0 9px; color: var(--muted); font-size: 18px; line-height: 1.5; }
+.logo-marquee { position: relative; width: 100%; overflow: hidden; padding: 18px 0; border-top: 1px solid var(--line-dark); border-bottom: 1px solid var(--line-dark); }
+.logo-marquee::before, .logo-marquee::after { content: ""; position: absolute; z-index: 2; top: 0; bottom: 0; width: min(12vw, 150px); pointer-events: none; }
+.logo-marquee::before { left: 0; background: linear-gradient(90deg, var(--black), transparent); }
+.logo-marquee::after { right: 0; background: linear-gradient(-90deg, var(--black), transparent); }
+.logo-track { display: flex; width: max-content; animation: logo-scroll 42s linear infinite; will-change: transform; }
+.logo-marquee:hover .logo-track, .logo-marquee:focus-within .logo-track { animation-play-state: paused; }
+.logo-set { display: flex; align-items: stretch; flex-shrink: 0; }
+.client-logo { display: inline-flex; align-items: center; justify-content: center; min-width: 210px; height: 112px; padding: 0 34px; color: rgba(255,255,255,.72); border-right: 1px solid var(--line-dark); font-size: 24px; font-weight: 900; letter-spacing: -.055em; white-space: nowrap; transition: color .2s ease, background-color .2s ease, transform .2s ease; }
+a.client-logo:hover, a.client-logo:focus-visible { color: var(--black); background: var(--lime); outline: none; transform: translateY(-2px); }
+.client-logo span { color: var(--lime); }
+a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black); }
+.logo-zarina { font-family: Georgia, serif; font-weight: 400; letter-spacing: .11em; }
+.logo-manai { letter-spacing: -.04em; }
+.logo-1cbit { font-size: 28px; letter-spacing: -.07em; }
+.logo-aqm { border: 1px solid rgba(216,255,0,.55); border-top: 0; border-bottom: 0; }
+.logo-profi { font-size: 27px; font-style: italic; }
+.logo-idgroup { font-size: 31px; letter-spacing: -.08em; }
+.logo-testcenter { font-size: 30px; letter-spacing: -.04em; }
+.logo-statimport { font-size: 20px; letter-spacing: .08em; }
+.logo-best { font-size: 28px; font-style: italic; }
+.logo-gke { font-size: 21px; letter-spacing: .02em; }
+.logo-profil { font-size: 21px; letter-spacing: .09em; }
+@keyframes logo-scroll { to { transform: translateX(-50%); } }
