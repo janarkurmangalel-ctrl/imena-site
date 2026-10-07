@@ -2,7 +2,6 @@ const dialog = document.querySelector('#lead-dialog');
 const serviceField = document.querySelector('#service-field');
 const form = document.querySelector('#lead-form');
 const formNote = document.querySelector('#form-note');
-const resumeDialog = document.querySelector('#resume-dialog');
 
 document.querySelectorAll('.js-open-form').forEach((button) => {
   button.addEventListener('click', () => {
@@ -16,14 +15,6 @@ dialog.addEventListener('click', (event) => {
   if (event.target === dialog) dialog.close();
 });
 
-document.querySelectorAll('.js-open-resume').forEach((button) => {
-  button.addEventListener('click', () => resumeDialog.showModal());
-});
-
-document.querySelector('.resume-close').addEventListener('click', () => resumeDialog.close());
-resumeDialog.addEventListener('click', (event) => {
-  if (event.target === resumeDialog) resumeDialog.close();
-});
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
