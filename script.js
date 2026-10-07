@@ -3,8 +3,6 @@ const serviceField = document.querySelector('#service-field');
 const form = document.querySelector('#lead-form');
 const formNote = document.querySelector('#form-note');
 const resumeDialog = document.querySelector('#resume-dialog');
-const resumeForm = document.querySelector('#resume-form');
-const resumeNote = document.querySelector('#resume-note');
 
 document.querySelectorAll('.js-open-form').forEach((button) => {
   button.addEventListener('click', () => {
@@ -33,8 +31,3 @@ form.addEventListener('submit', (event) => {
   formNote.style.color = '#d8ff00';
 });
 
-resumeForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  resumeNote.textContent = 'Подключаем передачу резюме в Bitrix24. Форма станет активной перед публичным запуском.';
-  resumeNote.style.color = '#d8ff00';
-});
