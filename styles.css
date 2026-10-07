@@ -164,11 +164,11 @@ input:focus { border-color: var(--lime); }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { animation: none; } }
 
-.trusted { padding-left: 0; padding-right: 0; }
+.trusted { padding-left: 0; padding-right: 0; color: var(--black); background: var(--lime); }
 .trusted-heading { display: grid; grid-template-columns: 1fr minmax(260px, 430px); gap: 60px; align-items: end; padding: 0 var(--pad); margin-bottom: 72px; }
 .trusted-heading h2 { max-width: 900px; margin-bottom: 0; font-size: clamp(44px, 6.6vw, 104px); line-height: .96; letter-spacing: -.07em; }
-.trusted-heading > p { margin: 0 0 9px; color: var(--muted); font-size: 18px; line-height: 1.5; }
-.logo-marquee { position: relative; width: 100%; overflow: hidden; padding: 18px 0; border-top: 1px solid var(--line-dark); border-bottom: 1px solid var(--line-dark); }
+.trusted-heading > p { margin: 0 0 9px; color: rgba(0,0,0,.66); font-size: 18px; line-height: 1.5; }
+.logo-marquee { position: relative; width: 100%; overflow: hidden; padding: 18px 0; background: var(--black); border-top: 1px solid rgba(0,0,0,.22); border-bottom: 1px solid rgba(0,0,0,.22); box-shadow: 0 28px 70px rgba(0,0,0,.18); }
 .logo-marquee::before, .logo-marquee::after { content: ""; position: absolute; z-index: 2; top: 0; bottom: 0; width: min(12vw, 150px); pointer-events: none; }
 .logo-marquee::before { left: 0; background: linear-gradient(90deg, var(--black), transparent); }
 .logo-marquee::after { right: 0; background: linear-gradient(-90deg, var(--black), transparent); }
