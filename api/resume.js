@@ -48,14 +48,17 @@ function responseText(payload) {
 }
 
 async function parseResume(text) {
-  const response = await fetch('https://api.openai.com/v1/responses', {
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  if (!gatewayToken) throw new Error('AI_GATEWAY_NOT_CONFIGURED');
+
+  const response = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${gatewayToken}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      model: process.env.AI_MODEL || 'openai/gpt-4o-mini',
       store: false,
       input: [
         {
@@ -249,7 +252,7 @@ module.exports = async function handler(req, res) {
     return reply(res, 405, { ok: false, message: 'Метод не поддерживается.' });
   }
 
-  if (!process.env.OPENAI_API_KEY || !process.env.BITRIX_WEBHOOK_URL) {
+  if (!process.env.BITRIX_WEBHOOK_URL) {
     return reply(res, 503, { ok: false, message: 'Интеграция ещё настраивается.' });
   }
 
