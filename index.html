@@ -20,7 +20,6 @@
       <a href="#approach">Подход</a>
     </nav>
     <div class="header-actions">
-      <script data-b24-form="click/4/7zrpfj" data-skip-moving="true">(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/180000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.kz/b37919032/crm/form/loader_4.js');</script>
       <button class="button button-ghost button-small js-open-resume" type="button">Загрузить резюме</button>
       <button class="button button-small js-open-form" type="button">Оставить заявку</button>
     </div>
@@ -234,7 +233,6 @@
           <h2>Ваше имя может стать следующим</h2>
           <p>Загрузите резюме в базу «ИМЕНА». Мы свяжемся с вами, когда появится позиция, соответствующая вашему опыту и карьерным целям.</p>
         </div>
-        <script data-b24-form="click/4/7zrpfj" data-skip-moving="true">(function(w,d,u){var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/180000|0);var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);})(window,document,'https://cdn-ru.bitrix24.kz/b37919032/crm/form/loader_4.js');</script>
         <button class="button button-dark js-open-resume" type="button">Загрузить резюме</button>
       </div>
     </section>
@@ -282,6 +280,23 @@
     </div>
   </dialog>
 
+
+  <dialog id="resume-dialog" aria-labelledby="resume-title">
+    <button class="dialog-close" type="button" aria-label="Закрыть форму">×</button>
+    <p class="eyebrow">БАЗА КАНДИДАТОВ</p>
+    <h2 id="resume-title">Загрузить резюме</h2>
+    <p class="dialog-intro">Прикрепите PDF или DOCX. Данные из резюме автоматически попадут в карточку кандидата в нашей CRM.</p>
+    <form id="resume-form" enctype="multipart/form-data">
+      <label class="file-field">Резюме
+        <input name="resume" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+        <span>PDF или DOCX · не более 10 МБ</span>
+      </label>
+      <label class="consent"><input name="consent" type="checkbox" value="yes" required><span>Согласен(на) на обработку персональных данных и добавление резюме в базу кандидатов «ИМЕНА»</span></label>
+      <label class="form-trap" aria-hidden="true">Не заполняйте это поле<input name="website" tabindex="-1" autocomplete="off"></label>
+      <button class="button" type="submit">Отправить резюме</button>
+      <p class="form-note" id="resume-note" role="status"></p>
+    </form>
+  </dialog>
 
   <a class="whatsapp-float" href="https://wa.me/77754113033?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%9C%D0%B5%D0%BD%D1%8F%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%B5%D1%81%D1%83%D0%B5%D1%82%20%D0%BF%D0%BE%D0%B4%D0%B1%D0%BE%D1%80%20%D1%81%D0%BE%D1%82%D1%80%D1%83%D0%B4%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%2C%20%D1%80%D0%B0%D1%81%D1%81%D0%BA%D0%B0%D0%B6%D0%B8%D1%82%D0%B5%20%D0%BF%D0%BE%D0%B4%D1%80%D0%BE%D0%B1%D0%BD%D0%B5%D0%B5%2C%20%D1%81%D0%BA%D0%BE%D0%BB%D1%8C%D0%BA%D0%BE%20%D1%81%D1%82%D0%BE%D0%B8%D1%82%20%D0%B8%20%D0%BA%D0%B0%D0%BA%20%D0%B2%D1%8B%20%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0%D0%B5%D1%82%D0%B5%3F" target="_blank" rel="noreferrer" aria-label="Написать в WhatsApp">
     <span class="whatsapp-float-icon" aria-hidden="true">💬</span>
