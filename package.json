@@ -1,0 +1,13 @@
+{
+  "name": "imena-site",
+  "private": true,
+  "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "formidable": "^3.5.2",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1"
+  }
+}
