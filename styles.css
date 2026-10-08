@@ -207,3 +207,9 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
   .logo-track { animation: none; }
   .logo-marquee { overflow-x: auto; }
 }
+
+.form-trap { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+#resume-dialog { width: min(680px, calc(100% - 24px)); }
+#resume-dialog .file-field input { margin-top: 2px; }
+#resume-dialog .button[disabled] { cursor: wait; opacity: .7; transform: none; }
+#resume-note { min-height: 18px; line-height: 1.45; }
