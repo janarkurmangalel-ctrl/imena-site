@@ -45,7 +45,7 @@ resumeForm.addEventListener('submit', async (event) => {
   resumeNote.style.color = '#d8ff00';
 
   try {
-    const response = await fetch('/api/resume', {
+    const response = await fetch('/api/candidate-upload', {
       method: 'POST',
       body: new FormData(resumeForm)
     });
