@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/candidate-upload",
+      "destination": "/api/candidate-upload"
+    }
+  ]
+}
