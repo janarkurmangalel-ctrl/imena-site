@@ -141,7 +141,7 @@ async function getContactConfiguration() {
     typeId: candidate.STATUS_ID,
     resumeField: findField(fields, (labels) => labels.includes('резюме'), 'file') || 'UF_CRM_1782883151542',
     cityField: findField(fields, (labels) => labels.includes('город')),
-    educationField: findField(fields, (labels) => labels.some((value) => value.includes('образован')))
+    educationField: findField(fields, (label) => label.includes('образован'))
   };
 }
 
