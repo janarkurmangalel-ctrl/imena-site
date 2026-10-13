@@ -137,10 +137,31 @@ async function getContactConfiguration() {
   if (!candidate) throw new Error('CANDIDATE_TYPE_NOT_FOUND');
 
   const fields = fieldResult.fields || fieldResult;
+  const cityField = findField(fields, (label) => label.includes('город')) || 'UF_CRM_1782804573';
+  let cityItems = fields[cityField]?.items || [];
+
+  if (!cityItems.length) {
+    const legacyFields = await bitrix('crm.contact.userfield.list', {
+      filter: { FIELD_NAME: cityField }
+    });
+    const legacyCity = (legacyFields || []).find((field) => field.FIELD_NAME === cityField);
+    cityItems = legacyCity?.LIST || [];
+  }
+
+  const cityOptions = Object.fromEntries(
+    cityItems
+      .map((item) => [
+        normalized(item.VALUE || item.value || item.NAME || item.name),
+        item.ID || item.id || item.VALUE_ID || item.valueId
+      ])
+      .filter(([label, id]) => label && id)
+  );
+
   return {
     typeId: candidate.STATUS_ID,
-    resumeField: findField(fields, (labels) => labels.includes('резюме'), 'file') || 'UF_CRM_1782883151542',
-    cityField: findField(fields, (labels) => labels.includes('город')),
+    resumeField: findField(fields, (label) => label.includes('резюме'), 'file') || 'UF_CRM_1782883151542',
+    cityField,
+    cityOptions,
     educationField: findField(fields, (label) => label.includes('образован'))
   };
 }
@@ -209,7 +230,13 @@ async function saveCandidate(data, filename, buffer) {
   };
 
   if (companyId) fields.companyId = companyId;
-  if (config.cityField && data.city) fields[config.cityField] = data.city;
+  if (config.cityField && data.city) {
+    const cityKey = normalized(data.city).replace(/^г\\.?\\s*/, '');
+    const cityEntry = Object.entries(config.cityOptions || {}).find(
+      ([label]) => label === cityKey || cityKey.includes(label) || label.includes(cityKey)
+    );
+    if (cityEntry) fields[config.cityField] = cityEntry[1];
+  }
   if (config.educationField && data.education) fields[config.educationField] = data.education;
 
   if (!duplicateId) {
