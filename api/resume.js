@@ -48,68 +48,59 @@ function responseText(payload) {
 }
 
 function localResumeParse(text) {
-  const lines = String(text || '')
+  const rawText = String(text || '');
+  const lines = rawText
     .split(/\r?\n/)
     .map((line) => clean(line, 1000))
     .filter(Boolean);
 
   const labeled = (pattern) => {
+    const expression = new RegExp('^(?:' + pattern + ')\\s*[:—–-]\\s*(.+)$', 'i');
     for (const line of lines) {
-      const match = line.match(new RegExp('^(?:' + pattern + ')\\s*[:—–-]\\s*(.+)
+      const match = line.match(expression);
+      if (match && match[1]) return clean(match[1], 1000);
+    }
+    return '';
+  };
 
-  const response = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${gatewayToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: process.env.AI_MODEL || 'openai/gpt-4o-mini',
-      store: false,
-      input: [
-        {
-          role: 'system',
-          content: 'Извлеки данные кандидата из резюме. Не выдумывай значения: если данных нет, верни пустую строку. Компания и должность — последнее или текущее место работы. Образование — кратко: учебное заведение, специальность и степень, если они указаны.'
-        },
-        {
-          role: 'user',
-          content: text.slice(0, 60000)
-        }
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'candidate_resume',
-          strict: true,
-          schema: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              last_name: { type: 'string' },
-              first_name: { type: 'string' },
-              middle_name: { type: 'string' },
-              position: { type: 'string' },
-              company: { type: 'string' },
-              city: { type: 'string' },
-              education: { type: 'string' },
-              phone: { type: 'string' },
-              email: { type: 'string' }
-            },
-            required: ['last_name', 'first_name', 'middle_name', 'position', 'company', 'city', 'education', 'phone', 'email']
-          }
-        }
-      }
-    })
-  });
+  const emailMatch = rawText.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  const phoneMatches = rawText.match(/(?:\+?7|8)[\s(.-]*\d{3}[\s).-]*\d{3}[\s.-]*\d{2}[\s.-]*\d{2}/g) || [];
+  const email = clean(emailMatch ? emailMatch[0] : '');
+  const phone = clean(phoneMatches[0] || '');
 
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(`OPENAI_ERROR: ${payload.error?.message || response.status}`);
+  let fullName = labeled('фио|фамилия имя отчество|имя кандидата');
+  if (!fullName) {
+    fullName = lines.slice(0, 15).find((line) => {
+      if (/резюме|curriculum|vitae|телефон|email|e-mail|город|должност/i.test(line)) return false;
+      if (/\d|@|:/.test(line)) return false;
+      const words = line.split(/\s+/);
+      return words.length >= 2 && words.length <= 4 &&
+        words.every((word) => /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’-]+$/.test(word));
+    }) || '';
   }
 
-  const raw = responseText(payload);
-  if (!raw) throw new Error('OPENAI_EMPTY_RESPONSE');
-  return JSON.parse(raw);
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  let education = labeled('образование|education');
+  if (!education) {
+    const index = lines.findIndex((line) => /^образование\s*$/i.test(line));
+    if (index >= 0) {
+      education = lines.slice(index + 1, index + 4)
+        .filter((line) => !/^(опыт работы|навыки|компетенции|языки|контакты)\b/i.test(line))
+        .join(', ');
+    }
+  }
+
+  return {
+    last_name: nameParts[0] || '',
+    first_name: nameParts[1] || nameParts[0] || '',
+    middle_name: nameParts.slice(2).join(' '),
+    position: labeled('должность|позиция|желаемая должность|профессия'),
+    company: labeled('компания|место работы|работодатель|организация'),
+    city: labeled('город|г\\.|место проживания|проживание|city'),
+    education: clean(education, 1000),
+    phone,
+    email
+  };
 }
 
 async function bitrix(method, params = {}) {
@@ -284,7 +275,7 @@ module.exports = async function handler(req, res) {
       return reply(res, 422, { ok: false, message: 'Не удалось прочитать текст резюме. Загрузите PDF с текстом или файл DOCX.' });
     }
 
-    const parsed = await parseResume(text);
+    const parsed = localResumeParse(text);
     const data = Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, clean(value)]));
     if (!data.phone && !data.email) {
       return reply(res, 422, { ok: false, message: 'В резюме не найден телефон или e-mail.' });
