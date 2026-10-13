@@ -282,6 +282,7 @@ module.exports = async function handler(req, res) {
     }
 
     const result = await saveCandidate(data, uploadedFile.originalFilename || 'resume.pdf', buffer);
+    console.log('resume upload succeeded', { contactId: result.id, action: result.action });
     return reply(res, 200, {
       ok: true,
       message: 'Резюме загружено. Спасибо!',
