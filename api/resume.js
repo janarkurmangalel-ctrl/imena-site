@@ -47,8 +47,8 @@ function responseText(payload) {
   return '';
 }
 
-async function parseResume(text) {
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+async function parseResume(text, requestToken) {
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || requestToken;
   if (!gatewayToken) throw new Error('AI_GATEWAY_NOT_CONFIGURED');
 
   const response = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
@@ -278,7 +278,7 @@ module.exports = async function handler(req, res) {
       return reply(res, 422, { ok: false, message: 'Не удалось прочитать текст резюме. Загрузите PDF с текстом или файл DOCX.' });
     }
 
-    const parsed = await parseResume(text);
+    const parsed = await parseResume(text, req.headers['x-vercel-oidc-token']);
     const data = Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, clean(value)]));
     if (!data.phone && !data.email) {
       return reply(res, 422, { ok: false, message: 'В резюме не найден телефон или e-mail.' });
