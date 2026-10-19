@@ -4,7 +4,7 @@ const { formidable } = require('formidable');
 const mammoth = require('mammoth');
 const pdf = require('pdf-parse');
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(['.pdf', '.docx']);
 
 function reply(res, status, payload) {
@@ -248,7 +248,22 @@ function multifields(data) {
 
 async function saveCandidate(data, filename, buffer) {
   const config = await getContactConfiguration();
-  const duplicateId = await findDuplicate(data.phone, data.email);
+  let duplicateId = await findDuplicate(data.phone, data.email);
+  let current = null;
+
+  if (duplicateId) {
+    current = await bitrix('crm.item.get', {
+      entityTypeId: 3,
+      id: duplicateId,
+      useOriginalUfNames: 'Y'
+    });
+
+    // Не превращаем контакт клиента в кандидата при совпадении телефона или e-mail.
+    if (String(current.item?.typeId || '') !== String(config.typeId)) {
+      duplicateId = 0;
+      current = null;
+    }
+  }
 
   const fields = {
     name: data.first_name || 'Кандидат',
@@ -284,11 +299,6 @@ async function saveCandidate(data, filename, buffer) {
     return { id: Number(created.item?.id), action: 'created' };
   }
 
-  const current = await bitrix('crm.item.get', {
-    entityTypeId: 3,
-    id: duplicateId,
-    useOriginalUfNames: 'Y'
-  });
   if (normalized(current.item?.sourceDescription).includes('резюме загружено через сайт imena.kz')) {
     fields.companyId = 0;
   }
@@ -341,7 +351,21 @@ module.exports = async function handler(req, res) {
     }
 
     const parsed = localResumeParse(text);
-    const data = Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, clean(value)]));
+    const fieldValue = (name) => clean(fields[name]?.[0] || fields[name]);
+    const submitted = {
+      first_name: fieldValue('first_name'),
+      last_name: fieldValue('last_name'),
+      position: fieldValue('position'),
+      city: fieldValue('city')
+    };
+
+    if (Object.values(submitted).some((value) => !value)) {
+      return reply(res, 400, { ok: false, message: 'Заполните имя, фамилию, должность и город.' });
+    }
+
+    const data = Object.fromEntries(
+      Object.entries({ ...parsed, ...submitted }).map(([key, value]) => [key, clean(value)])
+    );
     if (!data.phone && !data.email) {
       return reply(res, 422, { ok: false, message: 'В резюме не найден телефон или e-mail.' });
     }
@@ -357,9 +381,14 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     console.error('resume upload failed', String(error.message || error));
-    const userMessage = String(error.message).includes('maxFileSize')
-      ? 'Файл слишком большой. Максимальный размер — 10 МБ.'
-      : 'Не удалось обработать резюме. Попробуйте ещё раз или свяжитесь с нами.';
+    const errorText = String(error.message || error);
+    const userMessage = errorText.includes('maxFileSize')
+      ? 'Файл слишком большой. Максимальный размер — 4 МБ.'
+      : errorText.includes('CANDIDATE_TYPE_NOT_FOUND')
+        ? 'В Bitrix24 не найден тип контакта «Кандидат».'
+        : errorText.includes('BITRIX_ERROR')
+          ? 'Bitrix24 временно не принял резюме. Попробуйте ещё раз.'
+          : 'Не удалось обработать резюме. Попробуйте ещё раз или свяжитесь с нами.';
     return reply(res, 500, { ok: false, message: userMessage });
   } finally {
     if (uploadedFile?.filepath) fs.unlink(uploadedFile.filepath).catch(() => {});

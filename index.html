@@ -304,9 +304,15 @@
     <h2 id="resume-title">Резюме в базу</h2>
     <p class="dialog-intro">Прикрепите PDF или DOCX. Данные из резюме автоматически попадут в карточку кандидата в нашей CRM.</p>
     <form id="resume-form" enctype="multipart/form-data">
-      <label class="file-field">Резюме
+      <div class="form-grid">
+        <label>Имя<input name="first_name" type="text" autocomplete="given-name" required></label>
+        <label>Фамилия<input name="last_name" type="text" autocomplete="family-name" required></label>
+        <label>Должность<input name="position" type="text" autocomplete="organization-title" required></label>
+        <label>Город кандидата<input name="city" type="text" autocomplete="address-level2" required></label>
+      </div>
+      <label class="file-field">Добавить файл резюме
         <input name="resume" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
-        <span>PDF или DOCX · не более 10 МБ</span>
+        <span>PDF или DOCX · не более 4 МБ</span>
       </label>
       <label class="consent"><input name="consent" type="checkbox" value="yes" required><span>Согласен(на) на обработку персональных данных и добавление резюме в базу кандидатов «ИМЕНА»</span></label>
       <label class="form-trap" aria-hidden="true">Не заполняйте это поле<input name="website" tabindex="-1" autocomplete="off"></label>
