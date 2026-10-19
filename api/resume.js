@@ -272,6 +272,7 @@ async function saveCandidate(data, filename, buffer) {
     post: data.position,
     typeId: config.typeId,
     opened: 'N',
+    assignedById: 1,
     sourceDescription: data.company
       ? `Резюме загружено через сайт Imena.kz. Компания по резюме: ${data.company}`
       : 'Резюме загружено через сайт Imena.kz',
@@ -374,7 +375,7 @@ module.exports = async function handler(req, res) {
     console.log('resume upload succeeded', { contactId: result.id, action: result.action });
     return reply(res, 200, {
       ok: true,
-      message: 'Резюме загружено. Спасибо!',
+      message: `Резюме загружено. Карточка кандидата №${result.id}.`,
       contactId: result.id,
       action: result.action,
       detectedFields: Object.keys(data).filter((key) => Boolean(data[key]))
