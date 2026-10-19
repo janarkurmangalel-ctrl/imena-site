@@ -80,6 +80,37 @@ function localResumeParse(text) {
   }
 
   const nameParts = fullName.split(/\s+/).filter(Boolean);
+  const experienceIndex = lines.findIndex((line) => /^(?:опыт работы|опыт|work experience|employment history)\s*$/i.test(line));
+  const experienceLines = experienceIndex >= 0 ? lines.slice(experienceIndex + 1, experienceIndex + 12) : lines;
+  const positionPattern = /(?:^|\s)(?:директор|руководител|начальник|заведующ|менеджер|специалист|инженер|бухгалтер|экономист|юрист|маркетолог|рекрутер|hr|программист|разработчик|аналитик|администратор|оператор|водитель|повар|технолог|мастер|супервайзер|координатор|ассистент|секретарь|кладовщик|логист|снабжен|продавец|кассир|механик|электрик|сварщик)\w*/i;
+  const datePattern = /(?:19|20)\d{2}|настоящее время|по настоящее|январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр|ноябр|декабр/i;
+
+  let position = labeled('должность|позиция|желаемая должность|профессия');
+  if (!position) {
+    position = experienceLines.find((line) =>
+      positionPattern.test(line) &&
+      !/обязанност|навык|резюме|ваканси|желаем/i.test(line) &&
+      !datePattern.test(line) &&
+      line.length <= 140
+    ) || '';
+  }
+
+  let company = labeled('компания|место работы|работодатель|организация');
+  if (!company) {
+    company = experienceLines.find((line) =>
+      /^(?:тоо|ао|ип|ооо|оао|зао|ргп|гкп|кгу|тд|тк|llp|ltd|inc\.?|company)(?:\s|$)/i.test(line) &&
+      !positionPattern.test(line) &&
+      !datePattern.test(line) &&
+      line.length <= 180
+    ) || '';
+  }
+  if (!company && position) {
+    const positionIndex = experienceLines.indexOf(position);
+    const previousLine = positionIndex > 0 ? experienceLines[positionIndex - 1] : '';
+    if (previousLine && !datePattern.test(previousLine) && previousLine !== fullName && previousLine.length <= 180) {
+      company = previousLine;
+    }
+  }
   let education = labeled('образование|education');
   if (!education) {
     const index = lines.findIndex((line) => /^образование\s*$/i.test(line));
@@ -94,8 +125,8 @@ function localResumeParse(text) {
     last_name: nameParts[0] || '',
     first_name: nameParts[1] || nameParts[0] || '',
     middle_name: nameParts.slice(2).join(' '),
-    position: labeled('должность|позиция|желаемая должность|профессия'),
-    company: labeled('компания|место работы|работодатель|организация'),
+    position: clean(position, 250),
+    company: clean(company, 250),
     city: labeled('город|г\\.|место проживания|проживание|city'),
     education: clean(education, 1000),
     phone,
@@ -127,6 +158,18 @@ function findField(fields, matcher, requiredType) {
   return '';
 }
 
+function findCustomField(fields, matcher, allowedTypes = []) {
+  for (const [code, meta] of Object.entries(fields || {})) {
+    if (!/^UF_CRM_/i.test(code)) continue;
+    const labels = [meta.title, meta.formLabel, meta.listLabel, meta.filterLabel]
+      .filter(Boolean)
+      .map(normalized);
+    const typeAllowed = !allowedTypes.length || allowedTypes.includes(meta.type);
+    if (typeAllowed && labels.some(matcher)) return code;
+  }
+  return '';
+}
+
 async function getContactConfiguration() {
   const [statusRows, fieldResult] = await Promise.all([
     bitrix('crm.status.list', { filter: { ENTITY_ID: 'CONTACT_TYPE' } }),
@@ -138,6 +181,7 @@ async function getContactConfiguration() {
 
   const fields = fieldResult.fields || fieldResult;
   const cityField = findField(fields, (label) => label.includes('город')) || 'UF_CRM_1782804573';
+  const cityFieldType = fields[cityField]?.type || '';
   let cityItems = fields[cityField]?.items || [];
 
   if (!cityItems.length) {
@@ -161,8 +205,14 @@ async function getContactConfiguration() {
     typeId: candidate.STATUS_ID,
     resumeField: findField(fields, (label) => label.includes('резюме'), 'file') || 'UF_CRM_1782883151542',
     cityField,
+    cityFieldType,
     cityOptions,
-    educationField: findField(fields, (label) => label.includes('образован'))
+    educationField: findCustomField(fields, (label) => label.includes('образован')),
+    companyField: findCustomField(
+      fields,
+      (label) => label === 'компания' || label.includes('место работы') || label.includes('работодатель'),
+      ['string', 'text']
+    )
   };
 }
 
@@ -188,23 +238,6 @@ async function findDuplicate(phone, email) {
   return 0;
 }
 
-async function findOrCreateCompany(title) {
-  if (!title) return 0;
-  const list = await bitrix('crm.item.list', {
-    entityTypeId: 4,
-    select: ['id', 'title'],
-    filter: { title }
-  });
-  const exact = (list.items || []).find((item) => normalized(item.title) === normalized(title));
-  if (exact) return Number(exact.id);
-
-  const created = await bitrix('crm.item.add', {
-    entityTypeId: 4,
-    fields: { title, opened: 'N' }
-  });
-  return Number(created.item?.id || 0);
-}
-
 function multifields(data) {
   const fm = {};
   let index = 0;
@@ -216,7 +249,6 @@ function multifields(data) {
 async function saveCandidate(data, filename, buffer) {
   const config = await getContactConfiguration();
   const duplicateId = await findDuplicate(data.phone, data.email);
-  const companyId = await findOrCreateCompany(data.company);
 
   const fields = {
     name: data.first_name || 'Кандидат',
@@ -225,17 +257,20 @@ async function saveCandidate(data, filename, buffer) {
     post: data.position,
     typeId: config.typeId,
     opened: 'N',
-    sourceDescription: 'Резюме загружено через сайт Imena.kz',
+    sourceDescription: data.company
+      ? `Резюме загружено через сайт Imena.kz. Компания по резюме: ${data.company}`
+      : 'Резюме загружено через сайт Imena.kz',
     [config.resumeField]: [filename, buffer.toString('base64')]
   };
 
-  if (companyId) fields.companyId = companyId;
+  if (config.companyField && data.company) fields[config.companyField] = data.company;
   if (config.cityField && data.city) {
-    const cityKey = normalized(data.city).replace(/^г\\.?\\s*/, '');
+    const cityKey = normalized(data.city).replace(/^г\.?\s*/, '');
     const cityEntry = Object.entries(config.cityOptions || {}).find(
       ([label]) => label === cityKey || cityKey.includes(label) || label.includes(cityKey)
     );
     if (cityEntry) fields[config.cityField] = cityEntry[1];
+    else if (!['enumeration', 'list'].includes(config.cityFieldType)) fields[config.cityField] = data.city;
   }
   if (config.educationField && data.education) fields[config.educationField] = data.education;
 
@@ -254,6 +289,9 @@ async function saveCandidate(data, filename, buffer) {
     id: duplicateId,
     useOriginalUfNames: 'Y'
   });
+  if (normalized(current.item?.sourceDescription).includes('резюме загружено через сайт imena.kz')) {
+    fields.companyId = 0;
+  }
   const existing = Object.values(current.item?.fm || {});
   const additions = multifields({
     phone: data.phone && !existing.some((row) => row.typeId === 'PHONE' && normalized(row.value) === normalized(data.phone)) ? data.phone : '',
@@ -314,7 +352,8 @@ module.exports = async function handler(req, res) {
       ok: true,
       message: 'Резюме загружено. Спасибо!',
       contactId: result.id,
-      action: result.action
+      action: result.action,
+      detectedFields: Object.keys(data).filter((key) => Boolean(data[key]))
     });
   } catch (error) {
     console.error('resume upload failed', String(error.message || error));
