@@ -325,7 +325,7 @@ module.exports = async function handler(req, res) {
     return reply(res, 405, { ok: false, message: 'Метод не поддерживается.' });
   }
 
-  if (!process.env.BITRIX_WEBHOOK_URL) {
+  if (!(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL)) {
     return reply(res, 503, { ok: false, message: 'Интеграция ещё настраивается.' });
   }
 
