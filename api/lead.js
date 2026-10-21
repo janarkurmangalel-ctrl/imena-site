@@ -3,7 +3,7 @@ function reply(res, status, payload) {
 }
 
 function clean(value, max = 250) {
-  return String(value || '').replace(/\\s+/g, ' ').trim().slice(0, max);
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
 module.exports = async function handler(req, res) {
@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
     return reply(res, 405, { ok: false, message: 'Метод не поддерживается.' });
   }
 
-  const webhook = String(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL || '').replace(/\\/+$/, '');
+  const webhook = String(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL || '').replace(/\/+$/, '');
   if (!webhook) {
     return reply(res, 503, { ok: false, message: 'Интеграция с Bitrix24 не настроена.' });
   }
