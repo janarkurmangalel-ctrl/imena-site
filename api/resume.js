@@ -135,7 +135,7 @@ function localResumeParse(text) {
 }
 
 async function bitrix(method, params = {}) {
-  const root = String(process.env.BITRIX_WEBHOOK_URL || '').replace(/\/+$/, '');
+  const root = String(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL || '').replace(/\/+$/, '');
   const response = await fetch(`${root}/${method}.json`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
