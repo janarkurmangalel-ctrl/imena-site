@@ -30,13 +30,37 @@ document.querySelectorAll('dialog').forEach((dialog) => {
   });
 });
 
-leadForm.addEventListener('submit', (event) => {
+leadForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  formNote.textContent = 'Подключаем передачу заявок в Bitrix24. Форма станет активной перед публикацией.';
+  const submitButton = leadForm.querySelector('button[type="submit"]');
+  const originalButtonText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Отправляем…';
+  formNote.textContent = 'Отправляем заявку в Bitrix24…';
   formNote.style.color = '#d8ff00';
-});
 
-resumeForm.addEventListener('submit', async (event) => {
+  try {
+    const response = await fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(new FormData(leadForm)))
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.message || 'Не удалось отправить заявку.');
+
+    formNote.textContent = result.message || 'Заявка отправлена в Bitrix24.';
+    formNote.style.color = '#d8ff00';
+    leadForm.reset();
+    serviceField.value = 'Консультация';
+    setTimeout(() => leadDialog.close(), 1800);
+  } catch (error) {
+    formNote.textContent = error.message || 'Не удалось отправить заявку. Попробуйте ещё раз.';
+    formNote.style.color = '#ff7a7a';
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalButtonText;
+  }
+});resumeForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const submitButton = resumeForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
