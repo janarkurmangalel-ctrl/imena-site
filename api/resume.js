@@ -134,8 +134,19 @@ function localResumeParse(text) {
   };
 }
 
+function getBitrixWebhook() {
+  for (const value of [process.env.BITRIX_WEBHOOK, process.env.BITRIX_WEBHOOK_URL]) {
+    const candidate = String(value || '').trim().replace(/\/+$/, '');
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === 'https:' && parsed.hostname) return candidate;
+    } catch {}
+  }
+  return '';
+}
+
 async function bitrix(method, params = {}) {
-  const root = String(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL || '').replace(/\/+$/, '');
+  const root = getBitrixWebhook();
   const response = await fetch(`${root}/${method}.json`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -325,7 +336,7 @@ module.exports = async function handler(req, res) {
     return reply(res, 405, { ok: false, message: 'Метод не поддерживается.' });
   }
 
-  if (!(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL)) {
+  if (!getBitrixWebhook()) {
     return reply(res, 503, { ok: false, message: 'Интеграция ещё настраивается.' });
   }
 

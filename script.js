@@ -60,7 +60,9 @@ leadForm.addEventListener('submit', async (event) => {
     submitButton.disabled = false;
     submitButton.textContent = originalButtonText;
   }
-});resumeForm.addEventListener('submit', async (event) => {
+});
+
+resumeForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const submitButton = resumeForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;

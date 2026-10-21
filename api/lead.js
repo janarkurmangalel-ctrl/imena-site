@@ -1,3 +1,14 @@
+function getBitrixWebhook() {
+  for (const value of [process.env.BITRIX_WEBHOOK, process.env.BITRIX_WEBHOOK_URL]) {
+    const candidate = String(value || '').trim().replace(/\/+$/, '');
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === 'https:' && parsed.hostname) return candidate;
+    } catch {}
+  }
+  return '';
+}
+
 function reply(res, status, payload) {
   return res.status(status).setHeader('Cache-Control', 'no-store').json(payload);
 }
@@ -12,7 +23,7 @@ module.exports = async function handler(req, res) {
     return reply(res, 405, { ok: false, message: 'Метод не поддерживается.' });
   }
 
-  const webhook = String(process.env.BITRIX_WEBHOOK || process.env.BITRIX_WEBHOOK_URL || '').replace(/\/+$/, '');
+  const webhook = getBitrixWebhook();
   if (!webhook) {
     return reply(res, 503, { ok: false, message: 'Интеграция с Bitrix24 не настроена.' });
   }
