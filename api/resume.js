@@ -308,7 +308,10 @@ async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz
       useOriginalUfNames: 'Y',
       fields
     });
-    return { id: Number(created.item?.id), action: 'created' };
+    const createdId = Number(created.item?.id);
+    if (!createdId) throw new Error('CONTACT_CREATE_FAILED');
+    await verifyCandidateType(createdId, config.typeId);
+    return { id: createdId, action: 'created' };
   }
 
   if (normalized(current.item?.sourceDescription).includes('резюме загружено через сайт imena.kz')) {
@@ -327,7 +330,19 @@ async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz
     useOriginalUfNames: 'Y',
     fields
   });
+  await verifyCandidateType(duplicateId, config.typeId);
   return { id: duplicateId, action: 'updated' };
+}
+
+async function verifyCandidateType(contactId, expectedTypeId) {
+  const result = await bitrix('crm.item.get', {
+    entityTypeId: 3,
+    id: contactId,
+    useOriginalUfNames: 'Y'
+  });
+  if (String(result.item?.typeId || '') !== String(expectedTypeId)) {
+    throw new Error('CANDIDATE_TYPE_NOT_APPLIED');
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -422,7 +437,9 @@ module.exports = async function handler(req, res) {
       ? 'Файл слишком большой. Максимальный размер — 4 МБ.'
       : errorText.includes('CANDIDATE_TYPE_NOT_FOUND')
         ? 'В Bitrix24 не найден тип контакта «Кандидат».'
-        : errorText.includes('BITRIX_ERROR')
+          : errorText.includes('CANDIDATE_TYPE_NOT_APPLIED')
+          ? 'Bitrix24 не сохранил тип контакта «Кандидат». Резюме не подтверждено.'
+          : errorText.includes('BITRIX_ERROR')
           ? 'Bitrix24 временно не принял резюме. Попробуйте ещё раз.'
           : 'Не удалось обработать резюме. Попробуйте ещё раз или свяжитесь с нами.';
     return reply(res, 500, { ok: false, message: userMessage });
