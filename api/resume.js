@@ -359,14 +359,37 @@ module.exports = async function handler(req, res) {
       position: fieldValue('position'),
       city: fieldValue('city')
     };
+    const submittedValues = Object.fromEntries(
+      Object.entries(submitted).filter(([, value]) => Boolean(value))
+    );
+    const data = Object.fromEntries(
+      Object.entries({ ...parsed, ...submittedValues }).map(([key, value]) => [key, clean(value)])
+    );
+    const requiredFields = ['first_name', 'last_name', 'position', 'city'];
+    const missingFields = requiredFields.filter((name) => !data[name]);
+    const importMode = fieldValue('import_mode') === 'yes';
+    const dryRun = fieldValue('dry_run') === 'yes';
 
-    if (Object.values(submitted).some((value) => !value)) {
-      return reply(res, 400, { ok: false, message: 'Заполните имя, фамилию, должность и город.' });
+    if (dryRun) {
+      return reply(res, 200, {
+        ok: true,
+        preview: true,
+        data,
+        missingFields,
+        detectedFields: Object.keys(data).filter((key) => Boolean(data[key]))
+      });
     }
 
-    const data = Object.fromEntries(
-      Object.entries({ ...parsed, ...submitted }).map(([key, value]) => [key, clean(value)])
-    );
+    if (!importMode && missingFields.length) {
+      return reply(res, 400, { ok: false, message: 'Заполните имя, фамилию, должность и город.' });
+    }
+    if (importMode && (!data.first_name || !data.last_name)) {
+      return reply(res, 422, {
+        ok: false,
+        message: 'Не удалось определить имя и фамилию кандидата.',
+        missingFields
+      });
+    }
     if (!data.phone && !data.email) {
       return reply(res, 422, { ok: false, message: 'В резюме не найден телефон или e-mail.' });
     }
