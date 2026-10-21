@@ -246,7 +246,7 @@ function multifields(data) {
   return fm;
 }
 
-async function saveCandidate(data, filename, buffer) {
+async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz') {
   const config = await getContactConfiguration();
   let duplicateId = await findDuplicate(data.phone, data.email);
   let current = null;
@@ -274,8 +274,8 @@ async function saveCandidate(data, filename, buffer) {
     opened: 'N',
     assignedById: 1,
     sourceDescription: data.company
-      ? `Резюме загружено через сайт Imena.kz. Компания по резюме: ${data.company}`
-      : 'Резюме загружено через сайт Imena.kz',
+      ? `Резюме загружено через ${source}. Компания по резюме: ${data.company}`
+      : `Резюме загружено через ${source}`,
     [config.resumeField]: [filename, buffer.toString('base64')]
   };
 
@@ -371,7 +371,8 @@ module.exports = async function handler(req, res) {
       return reply(res, 422, { ok: false, message: 'В резюме не найден телефон или e-mail.' });
     }
 
-    const result = await saveCandidate(data, uploadedFile.originalFilename || 'resume.pdf', buffer);
+    const source = fieldValue('source') || 'сайт Imena.kz';
+    const result = await saveCandidate(data, uploadedFile.originalFilename || 'resume.pdf', buffer, source);
     console.log('resume upload succeeded', { contactId: result.id, action: result.action });
     return reply(res, 200, {
       ok: true,
