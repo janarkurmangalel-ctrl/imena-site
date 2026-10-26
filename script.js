@@ -5,6 +5,37 @@ const leadForm = document.querySelector('#lead-form');
 const formNote = document.querySelector('#form-note');
 const resumeForm = document.querySelector('#resume-form');
 const resumeNote = document.querySelector('#resume-note');
+const menuToggle = document.querySelector('.js-menu-toggle');
+const siteNavigation = document.querySelector('#site-navigation');
+
+function closeSiteMenu() {
+  siteNavigation.classList.remove('is-open');
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.textContent = 'Меню';
+}
+
+menuToggle.addEventListener('click', () => {
+  const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+  if (isOpen) {
+    closeSiteMenu();
+  } else {
+    siteNavigation.classList.add('is-open');
+    menuToggle.setAttribute('aria-expanded', 'true');
+    menuToggle.textContent = 'Закрыть';
+  }
+});
+
+siteNavigation.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', closeSiteMenu);
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeSiteMenu();
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) closeSiteMenu();
+});
 
 document.querySelectorAll('.js-open-form').forEach((button) => {
   button.addEventListener('click', () => {
