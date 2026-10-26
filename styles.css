@@ -111,7 +111,7 @@ h1 span, .recruiting-title h2 span { color: var(--lime); }
 .cta h2 { max-width: 1000px; margin: 30px 0 22px; }
 .cta > p:not(.section-number) { max-width: 650px; margin-bottom: 40px; font-size: 22px; line-height: 1.45; }
 .cta-actions { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
-.contact-phone { padding-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,.5); font-weight: 800; }
+.contact-phone, .contact-email { padding-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,.5); font-weight: 800; }
 .whatsapp-float { position: fixed; z-index: 70; right: clamp(16px, 2.4vw, 34px); bottom: clamp(16px, 2.4vw, 34px); display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 22px 0 12px; color: var(--black); background: var(--lime); border: 1px solid rgba(0,0,0,.18); border-radius: 999px; box-shadow: 0 16px 42px rgba(0,0,0,.28); font-size: 14px; font-weight: 800; letter-spacing: -.01em; transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease; }
 .whatsapp-float:hover { transform: translateY(-3px); background: var(--white); box-shadow: 0 20px 48px rgba(0,0,0,.36); }
 .whatsapp-float-icon { display: grid; place-items: center; width: 32px; height: 32px; color: var(--lime); background: var(--black); border-radius: 50%; font-size: 16px; }
