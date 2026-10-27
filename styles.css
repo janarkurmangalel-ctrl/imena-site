@@ -317,3 +317,25 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
   .site-header nav a { padding: 15px 0; border-bottom: 1px solid var(--line-dark); font-size: 15px; }
   .site-header nav a:last-child { border-bottom: 0; }
 }
+
+
+/* Scroll-triggered reveals inspired by the reference site's calm motion */
+.has-scroll-motion .scroll-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .72s cubic-bezier(.22,.8,.35,1), transform .72s cubic-bezier(.22,.8,.35,1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.has-scroll-motion .scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .has-scroll-motion .scroll-reveal,
+  .has-scroll-motion .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

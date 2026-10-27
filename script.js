@@ -121,3 +121,72 @@ resumeForm.addEventListener('submit', async (event) => {
     submitButton.disabled = false;
   }
 });
+
+
+const revealSelectors = [
+  '.trusted-heading',
+  '.problems > .section-number',
+  '.problems .section-heading',
+  '.problem-grid article',
+  '.services .section-heading',
+  '.service-list .service-row',
+  '.working-path > .section-number',
+  '.working-path .section-heading',
+  '.path-list article',
+  '.case-study > .section-number',
+  '.case-study .section-heading',
+  '.case-card',
+  '.case-cta',
+  '.recruiting > .section-number',
+  '.recruiting-title > *',
+  '.position-band',
+  '.process > div',
+  '.approach .section-heading',
+  '.principles article',
+  '.founder-section > .section-number',
+  '.founder-grid > *',
+  '.candidate-section > .section-number',
+  '.candidate-grid > *',
+  '.cta > *',
+  'footer > *'
+];
+
+const staggerSelectors = [
+  '.problem-grid article',
+  '.service-list .service-row',
+  '.path-list article',
+  '.process > div',
+  '.principles article'
+];
+
+if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.documentElement.classList.add('has-scroll-motion');
+
+  revealSelectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element) => {
+      element.classList.add('scroll-reveal');
+    });
+  });
+
+  staggerSelectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element, index) => {
+      element.style.setProperty('--reveal-delay', Math.min(index * 65, 260) + 'ms');
+    });
+  });
+
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -36px 0px'
+  });
+
+  document.querySelectorAll('.scroll-reveal').forEach((element) => {
+    revealObserver.observe(element);
+  });
+}
