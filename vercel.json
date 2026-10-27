@@ -4,5 +4,18 @@
       "source": "/candidate-upload",
       "destination": "/api/candidate-upload"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.imena\\.kz"
+        }
+      ],
+      "destination": "https://imena.kz/:path*",
+      "permanent": true
+    }
   ]
 }
