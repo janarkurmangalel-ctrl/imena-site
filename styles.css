@@ -242,6 +242,8 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
 .problem-grid a:hover b { transform: translate(3px, -3px); }
 .case-study { background: #e8e8e4; }
 .case-card { padding: clamp(26px, 5vw, 60px); color: var(--white); background: #090909; }
+.case-card + .case-card { margin-top: 24px; }
+.digital-case-result strong { max-width: 900px; font-size: clamp(42px, 6vw, 86px); line-height: .92; white-space: normal; }
 .case-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
 .case-result { display: flex; align-items: end; gap: 22px; padding: 44px 0 36px; border-bottom: 1px solid var(--line-dark); }
 .case-result strong { color: var(--lime); font-size: clamp(62px, 10vw, 140px); line-height: .82; letter-spacing: -.08em; white-space: nowrap; }
@@ -338,4 +340,8 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
     transform: none;
     transition: none;
   }
+}
+
+@media (max-width: 580px) {
+  .digital-case-result strong { font-size: clamp(40px, 11vw, 64px); }
 }
