@@ -371,3 +371,75 @@ a.client-logo:hover span, a.client-logo:focus-visible span { color: var(--black)
   .case-copy p { font-size: 16px; line-height: 1.65; }
   .case-note { font-size: 12px; }
 }
+
+/* Soft lime spotlights and a fine-grain finish for the ИМЕНА visual identity */
+.section-dark {
+  background-image:
+    radial-gradient(ellipse 42% 36% at 8% 18%, rgba(216,255,0,.105), transparent 74%),
+    radial-gradient(ellipse 36% 30% at 92% 84%, rgba(216,255,0,.055), transparent 76%);
+}
+.section-light,
+.problems,
+.case-study,
+.founder-section {
+  background-image:
+    radial-gradient(ellipse 42% 42% at 0% 0%, rgba(216,255,0,.12), transparent 72%),
+    radial-gradient(ellipse 36% 34% at 100% 100%, rgba(216,255,0,.075), transparent 74%);
+}
+.section-lime {
+  background-image:
+    radial-gradient(ellipse 44% 48% at 100% 0%, rgba(255,255,255,.3), transparent 72%),
+    radial-gradient(ellipse 38% 34% at 0% 100%, rgba(0,0,0,.07), transparent 74%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 45;
+  inset: 0;
+  pointer-events: none;
+  opacity: .035;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.52'/%3E%3C/svg%3E");
+}
+
+h1 span,
+.recruiting-title h2 span,
+.eyebrow,
+.case-result strong,
+.service-row.featured .price,
+.service-row.featured > a {
+  text-shadow: 0 0 20px rgba(216,255,0,.2);
+}
+.button {
+  box-shadow: 0 0 22px rgba(216,255,0,.11);
+}
+.button:hover,
+.button:focus-visible {
+  box-shadow: 0 10px 34px rgba(216,255,0,.24), 0 0 18px rgba(216,255,0,.2);
+}
+.button:focus-visible,
+.arrow-button:focus-visible,
+.service-row > a:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+}
+.arrow-button:hover,
+.service-row > a:hover {
+  color: var(--lime);
+  border-color: rgba(216,255,0,.72);
+  box-shadow: 0 0 18px rgba(216,255,0,.16);
+}
+.brand i {
+  box-shadow: 0 0 10px rgba(216,255,0,.85), 0 0 24px rgba(216,255,0,.42);
+}
+
+@media (max-width: 580px) {
+  .section-dark {
+    background-image:
+      radial-gradient(ellipse 74% 26% at 4% 10%, rgba(216,255,0,.09), transparent 76%),
+      radial-gradient(ellipse 60% 24% at 98% 92%, rgba(216,255,0,.045), transparent 78%);
+  }
+  body::after { opacity: .025; }
+}
