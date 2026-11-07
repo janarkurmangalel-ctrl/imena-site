@@ -443,3 +443,34 @@ a:focus-visible {
   }
   body::after { opacity: .025; }
 }
+
+
+/* Business details in the footer */
+footer {
+  grid-template-columns: minmax(110px, .55fr) minmax(180px, 1fr) minmax(205px, 1fr) minmax(230px, 1.15fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: start;
+}
+footer .footer-requisites {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+footer .footer-requisites strong {
+  color: var(--white);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+@media (max-width: 1100px) {
+  footer { grid-template-columns: 1fr 1fr; }
+  footer .footer-requisites { grid-column: 2; }
+}
+@media (max-width: 900px) {
+  footer { grid-template-columns: 1fr; }
+  footer .footer-requisites { grid-column: auto; }
+}
