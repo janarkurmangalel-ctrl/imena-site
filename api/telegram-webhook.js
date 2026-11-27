@@ -106,12 +106,16 @@ async function handleDocument(message) {
   const data = parseCaption(message.caption);
 
   const summary = [
-    'Проверьте данные:',
+    'Проверьте резюме:',
     '',
-    `Имя: ${data.first_name}`,
-    `Фамилия: ${data.last_name}`,
-    `Должность: ${data.position}`,
-    `Город: ${data.city}`,
+    ...(data
+      ? [
+          `Имя: ${data.first_name}`,
+          `Фамилия: ${data.last_name}`,
+          `Должность: ${data.position}`,
+          `Город: ${data.city}`
+        ]
+      : ['Имя, телефон, должность и город будут извлечены из файла автоматически.']),
     `Файл: ${filename}`,
     '',
     'Подтвердите, что кандидат разрешил обработать и сохранить резюме в базе кандидатов HR-агентства «Имена».'
