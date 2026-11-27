@@ -1,4 +1,5 @@
-// Temporary one-time helper; remove after webhook registration.\nconst crypto = require('node:crypto');
+// Temporary one-time helper; remove after webhook registration.
+const crypto = require('node:crypto');
 
 function respond(res, status, body) {
   res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8');
