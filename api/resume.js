@@ -129,12 +129,12 @@ function localResumeParse(text) {
 
   let city = labeled('город|место проживания|проживание|city');
   if (!city) {
-    const localityPattern = /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?(?:\\s*\\([^)]*\\))?,\\s*(?:м\\.|метро|не готов|готов|ready|not ready|willing|unwilling)/i;
+    const localityPattern = /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?(?:\s*\([^)]*\))?,\s*(?:м\.|метро|не готов|готов|ready|not ready|willing|unwilling)/i;
     const cityLine = lines.slice(0, 20).find((line) =>
-      /^г\\.\\s*[А-ЯЁA-Z]/i.test(line) || localityPattern.test(line)
+      /^г\.\s*[А-ЯЁA-Z]/i.test(line) || localityPattern.test(line)
     ) || '';
-    const cityMatch = cityLine.match(/^г\\.\\s*(.+)$/i) ||
-      cityLine.match(/^([А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?)(?:\\s*\\([^)]*\\))?,/i);
+    const cityMatch = cityLine.match(/^г\.\s*(.+)$/i) ||
+      cityLine.match(/^([А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?)(?:\s*\([^)]*\))?,/i);
     city = clean(cityMatch?.[1]?.split(',')[0] || '', 100);
   }
 
