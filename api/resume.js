@@ -274,6 +274,23 @@ function multifields(data) {
   return fm;
 }
 
+async function addResumeTimelineComment(contactId, filename, buffer, source) {
+  try {
+    await bitrix('crm.timeline.comment.add', {
+      fields: {
+        ENTITY_ID: Number(contactId),
+        ENTITY_TYPE_ID: 3,
+        COMMENT: `Резюме прикреплено. Источник: ${source}.`,
+        FILES: [[filename, buffer.toString('base64')]]
+      }
+    });
+  } catch {
+    const error = new Error(`BITRIX_COMMENT_ERROR: ${contactId}`);
+    error.contactId = Number(contactId);
+    throw error;
+  }
+}
+
 async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz') {
   const config = await getContactConfiguration();
   let duplicateId = await findDuplicate(data.phone, data.email);
@@ -328,6 +345,7 @@ async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz
     const createdId = Number(created.item?.id);
     if (!createdId) throw new Error('CONTACT_CREATE_FAILED');
     await verifyCandidateType(createdId, config.typeId);
+    await addResumeTimelineComment(createdId, filename, buffer, source);
     return { id: createdId, action: 'created' };
   }
 
@@ -348,6 +366,7 @@ async function saveCandidate(data, filename, buffer, source = 'сайт Imena.kz
     fields
   });
   await verifyCandidateType(duplicateId, config.typeId);
+  await addResumeTimelineComment(duplicateId, filename, buffer, source);
   return { id: duplicateId, action: 'updated' };
 }
 
@@ -494,16 +513,19 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('resume upload failed', String(error.message || error));
     const errorText = String(error.message || error);
-    const userMessage = errorText.includes('maxFileSize')
-      ? 'Файл слишком большой. Максимальный размер — 4 МБ.'
-      : errorText.includes('CANDIDATE_TYPE_NOT_FOUND')
-        ? 'В Bitrix24 не найден тип контакта «Кандидат».'
+    const commentFailure = errorText.includes('BITRIX_COMMENT_ERROR');
+    const userMessage = commentFailure
+      ? `Карточка кандидата №${error.contactId || ''} сохранена, но Bitrix не прикрепил резюме к комментарию. Отправьте файл повторно, чтобы добавить вложение.`
+      : errorText.includes('maxFileSize')
+        ? 'Файл слишком большой. Максимальный размер — 4 МБ.'
+        : errorText.includes('CANDIDATE_TYPE_NOT_FOUND')
+          ? 'В Bitrix24 не найден тип контакта «Кандидат».'
           : errorText.includes('CANDIDATE_TYPE_NOT_APPLIED')
-          ? 'Bitrix24 не сохранил тип контакта «Кандидат». Резюме не подтверждено.'
-          : errorText.includes('BITRIX_ERROR')
-          ? 'Bitrix24 временно не принял резюме. Попробуйте ещё раз.'
-          : 'Не удалось обработать резюме. Попробуйте ещё раз или свяжитесь с нами.';
-    return reply(res, 500, { ok: false, message: userMessage });
+            ? 'Bitrix24 не сохранил тип контакта «Кандидат». Резюме не подтверждено.'
+            : errorText.includes('BITRIX_ERROR')
+              ? 'Bitrix24 временно не принял резюме. Попробуйте ещё раз.'
+              : 'Не удалось обработать резюме. Попробуйте ещё раз или свяжитесь с нами.';
+    return reply(res, 500, { ok: false, message: userMessage, contactId: error.contactId || null });
   } finally {
     if (uploadedFile?.filepath) fs.unlink(uploadedFile.filepath).catch(() => {});
   }
