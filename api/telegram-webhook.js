@@ -81,15 +81,12 @@ function instructions() {
   return [
     'Резюме в базу «Имена»',
     '',
-    'Отправьте резюме одним сообщением в формате PDF или DOCX.',
-    'В подписи к файлу укажите через точку с запятой:',
-    '',
+    'Перешлите мне сообщение с резюме или отправьте файл PDF/DOCX.',
+    'Подпись к файлу не обязательна: система извлечёт из резюме имя, телефон, город и должность.',
+    'Если хотите указать или исправить данные вручную, добавьте подпись:',
     'Имя; Фамилия; Должность; Город',
     '',
-    'Пример:',
-    'Сауле; Жургунова; HR-менеджер; Астана',
-    '',
-    'Перед передачей данных в CRM бот покажет информацию и запросит ваше согласие.'
+    'Перед отправкой в Bitrix подтвердите, что кандидат разрешил сохранить резюме в базе «Имена».'
   ].join('\n');
 }
 
@@ -107,17 +104,6 @@ async function handleDocument(message) {
   }
 
   const data = parseCaption(message.caption);
-  if (!data) {
-    return sendMessage(chatId, [
-      'Не удалось прочитать подпись к файлу.',
-      '',
-      'Отправьте файл ещё раз и укажите:',
-      'Имя; Фамилия; Должность; Город',
-      '',
-      'Пример:',
-      'Сауле; Жургунова; HR-менеджер; Астана'
-    ].join('\n'));
-  }
 
   const summary = [
     'Проверьте данные:',
@@ -128,14 +114,14 @@ async function handleDocument(message) {
     `Город: ${data.city}`,
     `Файл: ${filename}`,
     '',
-    'Нажимая «Согласен(на), отправить», вы соглашаетесь на обработку персональных данных и добавление резюме в базу кандидатов HR-агентства «Имена».'
+    'Подтвердите, что кандидат разрешил обработать и сохранить резюме в базе кандидатов HR-агентства «Имена».'
   ].join('\n');
 
   return sendMessage(chatId, summary, {
     reply_parameters: { message_id: message.message_id },
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Согласен(на), отправить', callback_data: 'resume_confirm' },
+        { text: 'Согласие кандидата есть — добавить', callback_data: 'resume_confirm' },
         { text: 'Отмена', callback_data: 'resume_cancel' }
       ]]
     }
@@ -152,10 +138,7 @@ async function submitResume(callback) {
     return editMessage(chatId, messageId, 'Сессия устарела. Отправьте резюме повторно командой /start.');
   }
 
-  const data = parseCaption(original.caption);
-  if (!data) {
-    return editMessage(chatId, messageId, 'Не удалось прочитать данные. Отправьте резюме повторно командой /start.');
-  }
+  const data = parseCaption(original.caption) || {};
 
   await telegram('answerCallbackQuery', {
     callback_query_id: callback.id,
@@ -168,10 +151,10 @@ async function submitResume(callback) {
   if (buffer.length > MAX_FILE_SIZE) throw new Error('FILE_TOO_LARGE');
 
   const form = new FormData();
-  form.set('first_name', data.first_name);
-  form.set('last_name', data.last_name);
-  form.set('position', data.position);
-  form.set('city', data.city);
+  for (const field of ['first_name', 'last_name', 'position', 'city']) {
+    if (data[field]) form.set(field, data[field]);
+  }
+  form.set('import_mode', 'yes');
   form.set('consent', 'yes');
   form.set('source', callback.from?.username ? `Telegram @${callback.from.username}` : 'Telegram');
   form.set('resume', new Blob([buffer]), filename);
@@ -187,13 +170,20 @@ async function submitResume(callback) {
     throw new Error(result.message || `RESUME_API_ERROR ${response.status}`);
   }
 
+  const labels = {
+    first_name: 'имя',
+    last_name: 'фамилию',
+    position: 'должность',
+    city: 'город',
+    phone: 'телефон',
+    email: 'e-mail'
+  };
+  const detected = (result.detectedFields || []).map((field) => labels[field] || field);
+  const action = result.action === 'updated' ? 'обновлена' : 'создана';
   return editMessage(chatId, messageId, [
-    'Готово!',
-    '',
-    'Ваше резюме добавлено в базу кандидатов HR-агентства «Имена».',
-    `Номер карточки: ${result.contactId}`,
-    '',
-    'Мы свяжемся с вами, когда появится подходящая вакансия.'
+    'Готово! Резюме отправлено в Bitrix.',
+    `Карточка кандидата ${action}: №${result.contactId}`,
+    detected.length ? `Распознаны поля: ${detected.join(', ')}.` : 'Проверьте данные в карточке кандидата.'
   ].join('\n'));
 }
 
