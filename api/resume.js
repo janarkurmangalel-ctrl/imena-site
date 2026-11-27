@@ -383,7 +383,8 @@ module.exports = async function handler(req, res) {
       first_name: fieldValue('first_name'),
       last_name: fieldValue('last_name'),
       position: fieldValue('position'),
-      city: fieldValue('city')
+      city: fieldValue('city'),
+      phone: fieldValue('phone')
     };
     const submittedValues = Object.fromEntries(
       Object.entries(submitted).filter(([, value]) => Boolean(value))
@@ -394,6 +395,7 @@ module.exports = async function handler(req, res) {
     const requiredFields = ['first_name', 'last_name', 'position', 'city'];
     const missingFields = requiredFields.filter((name) => !data[name]);
     const importMode = fieldValue('import_mode') === 'yes';
+    const telegramImport = fieldValue('telegram_import') === 'yes';
     const dryRun = fieldValue('dry_run') === 'yes';
 
     if (dryRun) {
@@ -406,6 +408,23 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    if (telegramImport) {
+      const requiredForTelegram = ['first_name', 'last_name', 'position', 'city', 'phone'];
+      const missingForTelegram = requiredForTelegram.filter((name) => !data[name]);
+      if (missingForTelegram.length) {
+        const labels = {
+          first_name: 'имя',
+          last_name: 'фамилию',
+          position: 'должность',
+          city: 'город',
+          phone: 'телефон'
+        };
+        return reply(res, 422, {
+          ok: false,
+          message: `Не распознаны обязательные поля: ${missingForTelegram.map((name) => labels[name]).join(', ')}. Добавьте их в подпись к резюме через точку с запятой: Имя; Фамилия; Должность; Город; Телефон.`
+        });
+      }
+    }
     if (!importMode && missingFields.length) {
       return reply(res, 400, { ok: false, message: 'Заполните имя, фамилию, должность и город.' });
     }

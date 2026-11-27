@@ -19,14 +19,15 @@ function parseCaption(caption) {
     /^(?:имя|name)\s*[:—–-]\s*/i,
     /^(?:фамилия|surname|last name)\s*[:—–-]\s*/i,
     /^(?:должность|позиция|position)\s*[:—–-]\s*/i,
-    /^(?:город|city)\s*[:—–-]\s*/i
+    /^(?:город|city)\s*[:—–-]\s*/i,
+    /^(?:телефон|phone|мобильный|моб\.?\s*телефон)\s*[:—–-]\s*/i
   ];
   const parts = String(caption || '')
     .split(/\s*(?:;|\|)\s*|\r?\n+/)
     .map((item) => clean(item))
     .filter(Boolean);
 
-  if (parts.length !== 4) return null;
+  if (![4, 5].includes(parts.length)) return null;
   const values = parts.map((part, index) => clean(part.replace(labels[index], '')));
   if (values.some((value) => !value)) return null;
 
@@ -34,7 +35,8 @@ function parseCaption(caption) {
     first_name: values[0],
     last_name: values[1],
     position: values[2],
-    city: values[3]
+    city: values[3],
+    phone: values[4] || ''
   };
 }
 
@@ -81,15 +83,12 @@ function instructions() {
   return [
     'Резюме в базу «Имена»',
     '',
-    'Отправьте резюме одним сообщением в формате PDF или DOCX.',
-    'В подписи к файлу укажите через точку с запятой:',
+    'Перешлите мне сообщение с резюме или отправьте файл PDF/DOCX.',
+    'Подпись к файлу не обязательна: система извлечёт из резюме имя, телефон, город и должность.',
+    'Если парсер не найдёт данные, добавьте подпись:',
+    'Имя; Фамилия; Должность; Город; Телефон',
     '',
-    'Имя; Фамилия; Должность; Город',
-    '',
-    'Пример:',
-    'Сауле; Жургунова; HR-менеджер; Астана',
-    '',
-    'Перед передачей данных в CRM бот покажет информацию и запросит ваше согласие.'
+    'Перед отправкой в Bitrix подтвердите, что кандидат разрешил сохранить резюме в базе «Имена».'
   ].join('\n');
 }
 
@@ -107,35 +106,28 @@ async function handleDocument(message) {
   }
 
   const data = parseCaption(message.caption);
-  if (!data) {
-    return sendMessage(chatId, [
-      'Не удалось прочитать подпись к файлу.',
-      '',
-      'Отправьте файл ещё раз и укажите:',
-      'Имя; Фамилия; Должность; Город',
-      '',
-      'Пример:',
-      'Сауле; Жургунова; HR-менеджер; Астана'
-    ].join('\n'));
-  }
 
   const summary = [
-    'Проверьте данные:',
+    'Проверьте резюме:',
     '',
-    `Имя: ${data.first_name}`,
-    `Фамилия: ${data.last_name}`,
-    `Должность: ${data.position}`,
-    `Город: ${data.city}`,
+    ...(data
+      ? [
+          `Имя: ${data.first_name}`,
+          `Фамилия: ${data.last_name}`,
+          `Должность: ${data.position}`,
+          `Город: ${data.city}`
+        ]
+      : ['Имя, телефон, должность и город будут извлечены из файла автоматически.']),
     `Файл: ${filename}`,
     '',
-    'Нажимая «Согласен(на), отправить», вы соглашаетесь на обработку персональных данных и добавление резюме в базу кандидатов HR-агентства «Имена».'
+    'Подтвердите, что кандидат разрешил обработать и сохранить резюме в базе кандидатов HR-агентства «Имена».'
   ].join('\n');
 
   return sendMessage(chatId, summary, {
     reply_parameters: { message_id: message.message_id },
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Согласен(на), отправить', callback_data: 'resume_confirm' },
+        { text: 'Согласие кандидата есть — добавить', callback_data: 'resume_confirm' },
         { text: 'Отмена', callback_data: 'resume_cancel' }
       ]]
     }
@@ -152,10 +144,7 @@ async function submitResume(callback) {
     return editMessage(chatId, messageId, 'Сессия устарела. Отправьте резюме повторно командой /start.');
   }
 
-  const data = parseCaption(original.caption);
-  if (!data) {
-    return editMessage(chatId, messageId, 'Не удалось прочитать данные. Отправьте резюме повторно командой /start.');
-  }
+  const data = parseCaption(original.caption) || {};
 
   await telegram('answerCallbackQuery', {
     callback_query_id: callback.id,
@@ -168,10 +157,11 @@ async function submitResume(callback) {
   if (buffer.length > MAX_FILE_SIZE) throw new Error('FILE_TOO_LARGE');
 
   const form = new FormData();
-  form.set('first_name', data.first_name);
-  form.set('last_name', data.last_name);
-  form.set('position', data.position);
-  form.set('city', data.city);
+  for (const field of ['first_name', 'last_name', 'position', 'city', 'phone']) {
+    if (data[field]) form.set(field, data[field]);
+  }
+  form.set('import_mode', 'yes');
+  form.set('telegram_import', 'yes');
   form.set('consent', 'yes');
   form.set('source', callback.from?.username ? `Telegram @${callback.from.username}` : 'Telegram');
   form.set('resume', new Blob([buffer]), filename);
@@ -184,16 +174,28 @@ async function submitResume(callback) {
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok || !result.ok) {
-    throw new Error(result.message || `RESUME_API_ERROR ${response.status}`);
+    return editMessage(chatId, messageId, [
+      result.message || 'Не удалось обработать резюме.',
+      '',
+      'Если не распознаны город, должность или телефон, отправьте файл повторно с подписью:',
+      'Имя; Фамилия; Должность; Город; Телефон'
+    ].join('\n'));
   }
 
+  const labels = {
+    first_name: 'имя',
+    last_name: 'фамилию',
+    position: 'должность',
+    city: 'город',
+    phone: 'телефон',
+    email: 'e-mail'
+  };
+  const detected = (result.detectedFields || []).map((field) => labels[field] || field);
+  const action = result.action === 'updated' ? 'обновлена' : 'создана';
   return editMessage(chatId, messageId, [
-    'Готово!',
-    '',
-    'Ваше резюме добавлено в базу кандидатов HR-агентства «Имена».',
-    `Номер карточки: ${result.contactId}`,
-    '',
-    'Мы свяжемся с вами, когда появится подходящая вакансия.'
+    'Готово! Резюме отправлено в Bitrix.',
+    `Карточка кандидата ${action}: №${result.contactId}`,
+    detected.length ? `Распознаны поля: ${detected.join(', ')}.` : 'Проверьте данные в карточке кандидата.'
   ].join('\n'));
 }
 
