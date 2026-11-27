@@ -68,24 +68,46 @@ function localResumeParse(text) {
   const email = clean(emailMatch ? emailMatch[0] : '');
   const phone = clean(phoneMatches[0] || '');
 
-  let fullName = labeled('фио|фамилия имя отчество|имя кандидата');
+  const explicitFirstName = labeled('имя|first name|given name');
+  const explicitLastName = labeled('фамилия|surname|last name');
+  let fullName = labeled('фио|полное имя|фамилия имя отчество|имя кандидата|full name|candidate name');
   if (!fullName) {
-    fullName = lines.slice(0, 15).find((line) => {
-      if (/резюме|curriculum|vitae|телефон|email|e-mail|город|должност/i.test(line)) return false;
-      if (/\d|@|:/.test(line)) return false;
-      const words = line.split(/\s+/);
-      return words.length >= 2 && words.length <= 4 &&
-        words.every((word) => /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’-]+$/.test(word));
+    const nameNoise = /резюме|curriculum|vitae|телефон|контакты|email|e-mail|город|должност|опыт|образование|навык|специализац|инженер|менеджер|директор|бухгалтер|специалист|руководител|experience|education|skills|contact/i;
+    fullName = lines.slice(0, 35).find((line) => {
+      if (nameNoise.test(line) || /\d|@|:/.test(line)) return false;
+      const candidate = line.replace(/^[•*–-]\s*/, '').replace(/[,:;]+/g, ' ').trim();
+      const words = candidate.split(/\s+/);
+      return candidate.length >= 4 && candidate.length <= 100 && words.length >= 2 && words.length <= 4 &&
+        words.every((word) => /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’.-]*$/u.test(word));
     }) || '';
   }
+  const nameParts = fullName.replace(/^[•*–-]\s*/, '').split(/\s+/).filter(Boolean);
 
-  const nameParts = fullName.split(/\s+/).filter(Boolean);
-  const experienceIndex = lines.findIndex((line) => /^(?:опыт работы|опыт|work experience|employment history)\b/i.test(line));
-  const experienceLines = experienceIndex >= 0 ? lines.slice(experienceIndex + 1, experienceIndex + 12) : lines;
-  const positionPattern = /(?:^|\s)(?:директор|руководител|начальник|заведующ|менеджер|специалист|инженер|бухгалтер|экономист|юрист|маркетолог|рекрутер|hr|программист|разработчик|аналитик|администратор|оператор|водитель|повар|технолог|мастер|супервайзер|координатор|ассистент|секретарь|кладовщик|логист|снабжен|продавец|кассир|механик|электрик|сварщик)\w*/i;
+  const experienceIndex = lines.findIndex((line) =>
+    /^(?:опыт работы|опыт|work experience|employment history)\b/i.test(line)
+  );
+  const experienceLines = experienceIndex >= 0 ? lines.slice(experienceIndex + 1, experienceIndex + 16) : lines;
+  const positionPattern = /(?:^|\s)(?:директор|руководител|начальник|заведующ|менеджер|специалист|инженер|бухгалтер|экономист|юрист|маркетолог|рекрутер|hr|программист|разработчик|аналитик|администратор|оператор|водитель|повар|технолог|мастер|супервайзер|координатор|ассистент|секретарь|кладовщик|логист|снабжен|продавец|кассир|механик|электрик|сварщик|архитектор|дизайнер|врач|преподавател|учител|консультант|аудитор|финансист|сметчик|прораб|строитель|диспетчер|эксперт|переводчик|экономист)\w*/i;
   const datePattern = /(?:19|20)\d{2}|настоящее время|по настоящее|январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр|ноябр|декабр/i;
 
-  let position = labeled('должность|позиция|желаемая должность|профессия');
+  const cleanPosition = (value) => clean(
+    String(value || '')
+      .split(/\s+\d[\d\s.,]*\s*(?:₸|тенге|руб|usd|eur)/i)[0]
+      .split(/\s*\|\s*/)[0]
+      .replace(/^(?:должность|позиция|профессия|position|job title)\s*[:—–-]\s*/i, ''),
+    250
+  );
+
+  let position = cleanPosition(labeled('должность|позиция|желаемая должность|профессия|специальность|position|job title|role'));
+  if (!position) {
+    const specializationIndex = lines.findIndex((line) => /^специализац(?:ия|ии)\b/i.test(line));
+    if (specializationIndex > 0) {
+      const headline = cleanPosition(lines[specializationIndex - 1]);
+      if (headline.length >= 3 && !/^(тип занятости|формат работы|занятость)\b/i.test(headline)) {
+        position = headline;
+      }
+    }
+  }
   if (!position) {
     const titleLine = experienceLines.find((line) =>
       positionPattern.test(line) &&
@@ -93,15 +115,10 @@ function localResumeParse(text) {
       !datePattern.test(line) &&
       line.length <= 180
     ) || '';
-    position = clean(
-      titleLine
-        .split(/\s+\d[\d\s.,]*\s*(?:₸|тенге|руб)/i)[0]
-        .split(/\s*\|\s*/)[0],
-      250
-    );
+    position = cleanPosition(titleLine);
   }
 
-  let company = labeled('компания|место работы|работодатель|организация');
+  let company = labeled('компания|место работы|работодатель|организация|company');
   if (!company) {
     company = experienceLines.find((line) =>
       /^(?:тоо|ао|ип|ооо|оао|зао|ргп|гкп|кгу|тд|тк|llp|ltd|inc\.?|company)(?:\s|$)/i.test(line) &&
@@ -117,6 +134,7 @@ function localResumeParse(text) {
       company = previousLine;
     }
   }
+
   let education = labeled('образование|education');
   if (!education) {
     const index = lines.findIndex((line) => /^образование\s*$/i.test(line));
@@ -127,24 +145,51 @@ function localResumeParse(text) {
     }
   }
 
-  let city = labeled('город|место проживания|проживание|city');
+  let city = labeled('город|место проживания|проживание|city|location');
   if (!city) {
+    const nameIndex = fullName ? lines.findIndex((line) => line.includes(fullName)) : -1;
+    const contactIndex = lines.findIndex((line, index) =>
+      index > Math.max(nameIndex, -1) && /^(?:контакты|contact information|contacts)\b/i.test(line)
+    );
+    const headerStart = nameIndex >= 0 ? nameIndex + 1 : 0;
+    const headerEnd = contactIndex >= 0 ? contactIndex : Math.min(lines.length, headerStart + 14);
+    const headerLines = lines.slice(headerStart, headerEnd);
+    const knownCities = [
+      'Алматы','Астана','Шымкент','Караганда','Актобе','Тараз','Павлодар','Усть-Каменогорск',
+      'Семей','Костанай','Кызылорда','Атырау','Актау','Уральск','Петропавловск','Кокшетау',
+      'Талдыкорган','Туркестан','Талгар','Экибастуз','Рудный','Жезказган','Темиртау','Кентау',
+      'Конаев','Жанаозен','Байконур','Степногорск','Риддер','Балхаш','Сарань',
+      'Москва','Санкт-Петербург','Новосибирск','Екатеринбург','Казань','Краснодар','Омск','Томск',
+      'Минск','Ташкент','Бишкек'
+    ];
     const localityPattern = /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?(?:\s*\([^)]*\))?,\s*(?:м\.|метро|не готов|готов|ready|not ready|willing|unwilling)/i;
-    const cityLine = lines.slice(0, 20).find((line) =>
+    const locationLine = headerLines.find((line) =>
       /^г\.\s*[А-ЯЁA-Z]/i.test(line) || localityPattern.test(line)
     ) || '';
-    const cityMatch = cityLine.match(/^г\.\s*(.+)$/i) ||
-      cityLine.match(/^([А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?)(?:\s*\([^)]*\))?,/i);
-    city = clean(cityMatch?.[1]?.split(',')[0] || '', 100);
+    const explicitLocation = locationLine.match(/^г\.\s*(.+)$/i) ||
+      locationLine.match(/^([А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?)(?:\s*\([^)]*\))?,/i);
+    if (explicitLocation?.[1]) {
+      city = clean(explicitLocation[1], 100);
+    } else {
+      const normalizedHeader = headerLines.map(normalized);
+      const foundCity = knownCities.find((candidate) =>
+        normalizedHeader.some((line) =>
+          line === normalized(candidate) ||
+          line.startsWith(normalized(candidate) + ',') ||
+          line.startsWith(normalized(candidate) + ' (')
+        )
+      );
+      if (foundCity) city = foundCity;
+    }
   }
 
   return {
-    last_name: nameParts[0] || '',
-    first_name: nameParts[1] || nameParts[0] || '',
+    last_name: explicitLastName || nameParts[0] || '',
+    first_name: explicitFirstName || nameParts[1] || nameParts[0] || '',
     middle_name: nameParts.slice(2).join(' '),
     position: clean(position, 250),
     company: clean(company, 250),
-    city,
+    city: clean(city, 100),
     education: clean(education, 1000),
     phone,
     email
