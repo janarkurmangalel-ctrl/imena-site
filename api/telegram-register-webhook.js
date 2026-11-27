@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!token || !secret) return respond(res, 503, { ok: false });
+  if (!token || !secret) return respond(res, 503, { ok: false, reason: 'missing_configuration' });
 
   try {
     const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
@@ -30,9 +30,15 @@ module.exports = async function handler(req, res) {
       })
     });
     const result = await response.json();
-    if (!response.ok || !result.ok) return respond(res, 502, { ok: false });
+    if (!response.ok || !result.ok) {
+      const code = Number(result.error_code || response.status);
+      const reason = code === 401 ? 'telegram_rejected_bot_token'
+        : code === 400 ? 'telegram_rejected_webhook_configuration'
+        : 'telegram_rejected_request';
+      return respond(res, 502, { ok: false, reason, error_code: code });
+    }
     return respond(res, 200, { ok: true, webhook: true });
   } catch {
-    return respond(res, 502, { ok: false });
+    return respond(res, 502, { ok: false, reason: 'telegram_request_failed' });
   }
 };
