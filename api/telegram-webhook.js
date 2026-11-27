@@ -19,14 +19,15 @@ function parseCaption(caption) {
     /^(?:имя|name)\s*[:—–-]\s*/i,
     /^(?:фамилия|surname|last name)\s*[:—–-]\s*/i,
     /^(?:должность|позиция|position)\s*[:—–-]\s*/i,
-    /^(?:город|city)\s*[:—–-]\s*/i
+    /^(?:город|city)\s*[:—–-]\s*/i,
+    /^(?:телефон|phone|мобильный|моб\.?\s*телефон)\s*[:—–-]\s*/i
   ];
   const parts = String(caption || '')
     .split(/\s*(?:;|\|)\s*|\r?\n+/)
     .map((item) => clean(item))
     .filter(Boolean);
 
-  if (parts.length !== 4) return null;
+  if (![4, 5].includes(parts.length)) return null;
   const values = parts.map((part, index) => clean(part.replace(labels[index], '')));
   if (values.some((value) => !value)) return null;
 
@@ -34,7 +35,8 @@ function parseCaption(caption) {
     first_name: values[0],
     last_name: values[1],
     position: values[2],
-    city: values[3]
+    city: values[3],
+    phone: values[4] || ''
   };
 }
 
@@ -83,8 +85,8 @@ function instructions() {
     '',
     'Перешлите мне сообщение с резюме или отправьте файл PDF/DOCX.',
     'Подпись к файлу не обязательна: система извлечёт из резюме имя, телефон, город и должность.',
-    'Если хотите указать или исправить данные вручную, добавьте подпись:',
-    'Имя; Фамилия; Должность; Город',
+    'Если парсер не найдёт данные, добавьте подпись:',
+    'Имя; Фамилия; Должность; Город; Телефон',
     '',
     'Перед отправкой в Bitrix подтвердите, что кандидат разрешил сохранить резюме в базе «Имена».'
   ].join('\n');
@@ -155,10 +157,11 @@ async function submitResume(callback) {
   if (buffer.length > MAX_FILE_SIZE) throw new Error('FILE_TOO_LARGE');
 
   const form = new FormData();
-  for (const field of ['first_name', 'last_name', 'position', 'city']) {
+  for (const field of ['first_name', 'last_name', 'position', 'city', 'phone']) {
     if (data[field]) form.set(field, data[field]);
   }
   form.set('import_mode', 'yes');
+  form.set('telegram_import', 'yes');
   form.set('consent', 'yes');
   form.set('source', callback.from?.username ? `Telegram @${callback.from.username}` : 'Telegram');
   form.set('resume', new Blob([buffer]), filename);
@@ -171,7 +174,12 @@ async function submitResume(callback) {
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok || !result.ok) {
-    throw new Error(result.message || `RESUME_API_ERROR ${response.status}`);
+    return editMessage(chatId, messageId, [
+      result.message || 'Не удалось обработать резюме.',
+      '',
+      'Если не распознаны город, должность или телефон, отправьте файл повторно с подписью:',
+      'Имя; Фамилия; Должность; Город; Телефон'
+    ].join('\\n'));
   }
 
   const labels = {
