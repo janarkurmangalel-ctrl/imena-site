@@ -129,12 +129,12 @@ function localResumeParse(text) {
 
   let city = labeled('город|место проживания|проживание|city');
   if (!city) {
+    const localityPattern = /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?(?:\\s*\\([^)]*\\))?,\\s*(?:м\\.|метро|не готов|готов|ready|not ready|willing|unwilling)/i;
     const cityLine = lines.slice(0, 20).find((line) =>
-      /^г\.\s*[А-ЯЁA-Z]/i.test(line) ||
-      /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39},\s*(?:готов к переезду|готов к командировкам|ready to relocate|willing to relocate)/i.test(line)
+      /^г\\.\\s*[А-ЯЁA-Z]/i.test(line) || localityPattern.test(line)
     ) || '';
-    const cityMatch = cityLine.match(/^г\.\s*(.+)$/i) ||
-      cityLine.match(/^([^,]+),\s*(?:готов к переезду|готов к командировкам|ready to relocate|willing to relocate)/i);
+    const cityMatch = cityLine.match(/^г\\.\\s*(.+)$/i) ||
+      cityLine.match(/^([А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39}?)(?:\\s*\\([^)]*\\))?,/i);
     city = clean(cityMatch?.[1]?.split(',')[0] || '', 100);
   }
 
@@ -473,6 +473,7 @@ module.exports = async function handler(req, res) {
       const requiredForTelegram = ['first_name', 'last_name', 'position', 'city', 'phone'];
       const missingForTelegram = requiredForTelegram.filter((name) => !data[name]);
       if (missingForTelegram.length) {
+        console.warn('telegram resume required fields missing', { missingFields: missingForTelegram });
         const labels = {
           first_name: 'имя',
           last_name: 'фамилию',
