@@ -80,19 +80,25 @@ function localResumeParse(text) {
   }
 
   const nameParts = fullName.split(/\s+/).filter(Boolean);
-  const experienceIndex = lines.findIndex((line) => /^(?:опыт работы|опыт|work experience|employment history)\s*$/i.test(line));
+  const experienceIndex = lines.findIndex((line) => /^(?:опыт работы|опыт|work experience|employment history)\b/i.test(line));
   const experienceLines = experienceIndex >= 0 ? lines.slice(experienceIndex + 1, experienceIndex + 12) : lines;
   const positionPattern = /(?:^|\s)(?:директор|руководител|начальник|заведующ|менеджер|специалист|инженер|бухгалтер|экономист|юрист|маркетолог|рекрутер|hr|программист|разработчик|аналитик|администратор|оператор|водитель|повар|технолог|мастер|супервайзер|координатор|ассистент|секретарь|кладовщик|логист|снабжен|продавец|кассир|механик|электрик|сварщик)\w*/i;
   const datePattern = /(?:19|20)\d{2}|настоящее время|по настоящее|январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр|ноябр|декабр/i;
 
   let position = labeled('должность|позиция|желаемая должность|профессия');
   if (!position) {
-    position = experienceLines.find((line) =>
+    const titleLine = experienceLines.find((line) =>
       positionPattern.test(line) &&
-      !/обязанност|навык|резюме|ваканси|желаем/i.test(line) &&
+      !/обязанност|навык|резюме|ваканси|желаем|специализации/i.test(line) &&
       !datePattern.test(line) &&
-      line.length <= 140
+      line.length <= 180
     ) || '';
+    position = clean(
+      titleLine
+        .split(/\s+\d[\d\s.,]*\s*(?:₸|тенге|руб)/i)[0]
+        .split(/\s*\|\s*/)[0],
+      250
+    );
   }
 
   let company = labeled('компания|место работы|работодатель|организация');
@@ -121,13 +127,24 @@ function localResumeParse(text) {
     }
   }
 
+  let city = labeled('город|место проживания|проживание|city');
+  if (!city) {
+    const cityLine = lines.slice(0, 20).find((line) =>
+      /^г\.\s*[А-ЯЁA-Z]/i.test(line) ||
+      /^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z'’ -]{1,39},\s*(?:готов к переезду|готов к командировкам|ready to relocate|willing to relocate)/i.test(line)
+    ) || '';
+    const cityMatch = cityLine.match(/^г\.\s*(.+)$/i) ||
+      cityLine.match(/^([^,]+),\s*(?:готов к переезду|готов к командировкам|ready to relocate|willing to relocate)/i);
+    city = clean(cityMatch?.[1]?.split(',')[0] || '', 100);
+  }
+
   return {
     last_name: nameParts[0] || '',
     first_name: nameParts[1] || nameParts[0] || '',
     middle_name: nameParts.slice(2).join(' '),
     position: clean(position, 250),
     company: clean(company, 250),
-    city: labeled('город|г\\.|место проживания|проживание|city'),
+    city,
     education: clean(education, 1000),
     phone,
     email
@@ -372,13 +389,39 @@ module.exports = async function handler(req, res) {
     uploadedFile = Array.isArray(files.resume) ? files.resume[0] : files.resume;
     if (!uploadedFile) return reply(res, 400, { ok: false, message: 'Прикрепите резюме в формате PDF или DOCX.' });
 
-    const { buffer, text } = await extractText(uploadedFile);
+    const fieldValue = (name) => clean(fields[name]?.[0] || fields[name]);
+    const telegramImport = fieldValue('telegram_import') === 'yes';
+    let buffer;
+    let text = '';
+
+    try {
+      ({ buffer, text } = await extractText(uploadedFile));
+    } catch (error) {
+      if (!telegramImport) throw error;
+      buffer = await fs.readFile(uploadedFile.filepath);
+      console.warn('telegram resume text extraction failed', {
+        extension: path.extname(uploadedFile.originalFilename || '').toLowerCase(),
+        errorType: String(error?.name || 'Error')
+      });
+    }
+
+    const manualTelegramFields = ['first_name', 'last_name', 'position', 'city', 'phone'];
+    const hasManualTelegramFields = manualTelegramFields.every((name) => Boolean(fieldValue(name)));
     if (clean(text).length < 80) {
-      return reply(res, 422, { ok: false, message: 'Не удалось прочитать текст резюме. Загрузите PDF с текстом или файл DOCX.' });
+      console.warn('resume text extraction too short', {
+        extension: path.extname(uploadedFile.originalFilename || '').toLowerCase(),
+        textLength: clean(text).length,
+        telegramImport
+      });
+      if (!telegramImport || !hasManualTelegramFields) {
+        const message = telegramImport
+          ? 'Не удалось прочитать текст резюме. Повторите отправку с подписью: Имя; Фамилия; Должность; Город; Телефон.'
+          : 'Не удалось прочитать текст резюме. Загрузите PDF с текстом или файл DOCX.';
+        return reply(res, 422, { ok: false, message });
+      }
     }
 
     const parsed = localResumeParse(text);
-    const fieldValue = (name) => clean(fields[name]?.[0] || fields[name]);
     const submitted = {
       first_name: fieldValue('first_name'),
       last_name: fieldValue('last_name'),
@@ -395,7 +438,6 @@ module.exports = async function handler(req, res) {
     const requiredFields = ['first_name', 'last_name', 'position', 'city'];
     const missingFields = requiredFields.filter((name) => !data[name]);
     const importMode = fieldValue('import_mode') === 'yes';
-    const telegramImport = fieldValue('telegram_import') === 'yes';
     const dryRun = fieldValue('dry_run') === 'yes';
 
     if (dryRun) {
