@@ -83,15 +83,13 @@ function instructions() {
   return [
     'Резюме в базу «Имена»',
     '',
-    'Перешлите мне сообщение с резюме или отправьте файл PDF/DOCX.',
-    'Подпись к файлу не обязательна: система извлечёт из резюме имя, телефон, город и должность.',
-    'Если парсер не найдёт данные, добавьте подпись:',
+    'Перешлите сообщение с резюме или отправьте файл PDF/DOCX — бот автоматически передаст его в Bitrix.',
+    'Если данные не распознаются, добавьте подпись:',
     'Имя; Фамилия; Должность; Город; Телефон',
     '',
-    'Перед отправкой в Bitrix подтвердите, что кандидат разрешил сохранить резюме в базе «Имена».'
+    'Отправляя файл, HR подтверждает, что согласие кандидата на хранение резюме в базе «Имена» получено отдельно.'
   ].join('\n');
 }
-
 async function handleDocument(message) {
   const chatId = message.chat.id;
   const document = message.document;
@@ -105,35 +103,27 @@ async function handleDocument(message) {
     return sendMessage(chatId, 'Файл слишком большой. Максимальный размер — 4 МБ.');
   }
 
-  const data = parseCaption(message.caption);
-
-  const summary = [
-    'Проверьте резюме:',
-    '',
-    ...(data
-      ? [
-          `Имя: ${data.first_name}`,
-          `Фамилия: ${data.last_name}`,
-          `Должность: ${data.position}`,
-          `Город: ${data.city}`
-        ]
-      : ['Имя, телефон, должность и город будут извлечены из файла автоматически.']),
-    `Файл: ${filename}`,
-    '',
-    'Подтвердите, что кандидат разрешил обработать и сохранить резюме в базе кандидатов HR-агентства «Имена».'
-  ].join('\n');
-
-  return sendMessage(chatId, summary, {
-    reply_parameters: { message_id: message.message_id },
-    reply_markup: {
-      inline_keyboard: [[
-        { text: 'Согласие кандидата есть — добавить', callback_data: 'resume_confirm' },
-        { text: 'Отмена', callback_data: 'resume_cancel' }
-      ]]
-    }
+  const progress = await sendMessage(chatId, 'Резюме получено. Извлекаю данные и отправляю в Bitrix…', {
+    reply_parameters: { message_id: message.message_id }
   });
-}
 
+  try {
+    return await submitResume({
+      from: message.from,
+      message: {
+        chat: message.chat,
+        message_id: progress.message_id,
+        reply_to_message: message
+      }
+    });
+  } catch (error) {
+    console.error('telegram resume submission failed', String(error.message || error));
+    return editMessage(chatId, progress.message_id, [
+      'Не удалось загрузить резюме.',
+      'Отправьте файл ещё раз или добавьте подпись: Имя; Фамилия; Должность; Город; Телефон.'
+    ].join('\n'));
+  }
+}
 async function submitResume(callback) {
   const botMessage = callback.message;
   const original = botMessage?.reply_to_message;
@@ -146,10 +136,12 @@ async function submitResume(callback) {
 
   const data = parseCaption(original.caption) || {};
 
-  await telegram('answerCallbackQuery', {
-    callback_query_id: callback.id,
-    text: 'Загружаем резюме…'
-  });
+  if (callback.id) {
+    await telegram('answerCallbackQuery', {
+      callback_query_id: callback.id,
+      text: 'Загружаем резюме…'
+    });
+  }
 
   const document = original.document;
   const filename = clean(document.file_name, 180) || 'resume.pdf';
@@ -163,7 +155,8 @@ async function submitResume(callback) {
   form.set('import_mode', 'yes');
   form.set('telegram_import', 'yes');
   form.set('consent', 'yes');
-  form.set('source', callback.from?.username ? `Telegram @${callback.from.username}` : 'Telegram');
+  const telegramSource = callback.from?.username ? `Telegram @${callback.from.username}` : 'Telegram';
+  form.set('source', `${telegramSource}; согласие кандидата подтверждено до загрузки`);
   form.set('resume', new Blob([buffer]), filename);
 
   const siteRoot = String(process.env.PUBLIC_SITE_URL || 'https://imena.kz').replace(/\/+$/, '');
