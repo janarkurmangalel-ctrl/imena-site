@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
       const reason = code === 401 ? 'telegram_rejected_bot_token'
         : code === 400 ? 'telegram_rejected_webhook_configuration'
         : 'telegram_rejected_request';
-      return respond(res, 502, { ok: false, reason, error_code: code });
+      const detail = String(result.description || '').replaceAll(token, '[redacted]').replaceAll(secret, '[redacted]').slice(0, 160);\n      return respond(res, 502, { ok: false, reason, error_code: code, detail });
     }
     return respond(res, 200, { ok: true, webhook: true });
   } catch {
